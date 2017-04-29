@@ -361,6 +361,7 @@ namespace emailTest
             }
         }
 
+        // function prepares booking mail to shipping company
         private static void prepareBookingMailToAgent(Common.ShippingCompany shippingCompany)
         {
             List<Common.Order>  resultList      = new List<Common.Order>();
