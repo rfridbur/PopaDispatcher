@@ -1,0 +1,9 @@
+Hi {agent},
+
+We have new booking:
+
+{table}
+
+Please confirm that it will be loaded on the scheduled vessel without delay.
+
+Thanks

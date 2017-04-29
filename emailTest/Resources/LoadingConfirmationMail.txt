@@ -1,0 +1,9 @@
+Hi {agent},
+
+Tommorow ({date}, {day}) we have loading for:
+
+{table}
+
+Please confirm that everything is on order.
+
+Thanks

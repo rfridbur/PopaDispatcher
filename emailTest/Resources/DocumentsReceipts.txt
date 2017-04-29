@@ -1,0 +1,7 @@
+Hi {agent},
+
+Please send me the relevant documents for the following orders:
+
+{table}
+
+Thanks
