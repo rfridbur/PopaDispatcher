@@ -69,7 +69,7 @@ namespace emailTest
             catch (Exception e)
             {
                 // empty cell or could't parse
-                OrdersParser._Form.log(string.Format("Failed to parse data. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to parse date. val: {0}, error: {1}", value, e.Message), OrdersParser.logLevel.error);
             };
 
             return val;

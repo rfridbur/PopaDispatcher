@@ -402,6 +402,13 @@ namespace emailTest
                     order.jobNo          = Convert.ToInt32(sheet[row, Utils.getIndexFromColumnChar('A')]);
                     order.consignmentNum = Convert.ToInt32(sheet[row, Utils.getIndexFromColumnChar('B')]);
 
+                    // sanity check - job number must be valid
+                    if (order.jobNo == 0)
+                    {
+                        // invalid - don't proceed with the parse
+                        continue;
+                    }
+
                     // strings
                     order.customer       = sheet[row, Utils.getIndexFromColumnChar('C')];
                     order.shipper        = sheet[row, Utils.getIndexFromColumnChar('D')];
