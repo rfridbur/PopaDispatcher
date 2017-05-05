@@ -31,8 +31,8 @@ namespace emailTest
             catch (Exception e)
             {
                 // fatal: cannot continue
-                OrdersParser._Form.log(string.Format("Failed to open excel instance. Error: {0}", e.Message), OrdersParser.logLevel.error);
-                OrdersParser._Form.log(string.Format("Try to restart your PC or application"), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open excel instance. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
+                OrdersParser._Form.log(string.Format("Try to restart your PC or application"), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -85,7 +85,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -141,7 +141,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -165,7 +165,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -217,7 +217,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -240,7 +240,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -296,7 +296,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -320,7 +320,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -353,7 +353,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed parsing private DB. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -375,7 +375,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", Common.plannedImportExcel, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", Common.plannedImportExcel, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -438,7 +438,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to parse excel. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to parse excel. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -458,7 +458,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to add new workbook into excel. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to add new workbook into excel. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }

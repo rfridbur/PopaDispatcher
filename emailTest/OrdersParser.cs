@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Data;
 using System.Reflection;
-using System.Globalization;
 
 namespace emailTest
 {
@@ -20,8 +19,10 @@ namespace emailTest
 
             buttonsSetVisible(false);
             animateGif(true);
-            arrivals_lbl.Visible = false;
-            sails_lbl.Visible = false;
+            arrivals_lbl.Text = string.Empty;
+            sails_lbl.Text = string.Empty;
+            ashdodLinkLbl.LinkClicked += AshdodLinkLbl_LinkClicked;
+            haifaLinkLbl.LinkClicked += HaifaLinkLbl_LinkClicked;
 
             // needed for logs from other classes
             _Form = this;
@@ -62,10 +63,41 @@ namespace emailTest
 
                                             // yesterday's sails
                                             updateSailsGrid();
-                                        })
+                                        });
+        }
 
-                        // when done, call this CB
-                        .ContinueWith(initCompleteCB);
+        // hyperlink for haifa port
+        private void HaifaLinkLbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // specify that the link was visited
+            if (haifaLinkLbl.InvokeRequired == true)
+            {
+                haifaLinkLbl.Invoke(new MethodInvoker(delegate { haifaLinkLbl.LinkVisited = true; }));
+            }
+            else
+            {
+                haifaLinkLbl.LinkVisited = true;
+            }
+
+            // navigate to a URL
+            System.Diagnostics.Process.Start(PortService.HAIFA_URL);
+        }
+
+        //hyperlink for port ashdod port
+        private void AshdodLinkLbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // specify that the link was visited
+            if (ashdodLinkLbl.InvokeRequired == true)
+            {
+                ashdodLinkLbl.Invoke(new MethodInvoker(delegate { ashdodLinkLbl.LinkVisited = true; }));
+            }
+            else
+            {
+                ashdodLinkLbl.LinkVisited = true;
+            }
+
+            // navigate to a URL
+            System.Diagnostics.Process.Start(PortService.ASHDOD_URL);
         }
 
         // handler for "prepare mails" button click
@@ -75,7 +107,7 @@ namespace emailTest
 
             if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
             {
-                log("Failed to open excel with data - exiting", logLevel.error);
+                log("Failed to open excel with data - exiting", LogLevel.Error);
                 cleanResources(false);
             }
             else
@@ -147,23 +179,23 @@ namespace emailTest
         }
 
         // CB called when init is complete
-        private void initCompleteCB(Task obj)
+        private void initCompleteCB()
         {
             animateGif(false);
             buttonsSetVisible(true);
-            log(string.Format("Press on the '{0}' button to continue", reports_btn.Text));
+            log(string.Format("Init is complete"));
         }
 
-        public enum logLevel
+        public enum LogLevel
         {
-            info,
-            error
+            Info,
+            Error
         }
 
         // function prints log (basic is 'info')
         // since can be called from different processes
         // need to make sure that it can update GUI variables using invoke methods
-        public void log(string msg, logLevel level = logLevel.info)
+        public void log(string msg, LogLevel level = LogLevel.Info)
         {
             if (logTextBox.InvokeRequired == true)
             {
@@ -174,19 +206,33 @@ namespace emailTest
                 logThreadSafe(msg, level);
             }
         }
+
+        // function updates lbl.Text with input text
+        public void updateLabel(Label lbl, string text)
+        {
+            if (lbl.InvokeRequired == true)
+            {
+                lbl.Invoke(new MethodInvoker(delegate { lbl.Text = text; lbl.Refresh(); }));
+            }
+            else
+            {
+                lbl.Text = text;
+                lbl.Refresh();
+            }
+        }
         
         // function updates GUI, therefore, must be called on same thread
-        private void logThreadSafe(string msg, logLevel level)
+        private void logThreadSafe(string msg, LogLevel level)
         {
             // add 'enter' only if not first
             if (string.IsNullOrEmpty(logTextBox.Text) == false) logTextBox.AppendText(Environment.NewLine);
 
-            if (level == logLevel.error)
+            if (level == LogLevel.Error)
             {
                 logTextBox.SelectionColor = Color.Red;
             }
 
-            if (level == logLevel.info)
+            if (level == LogLevel.Info)
             {
                 logTextBox.SelectionColor = Color.Black;
             }
@@ -210,7 +256,7 @@ namespace emailTest
             // sanity check
             if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
             {
-                log("Failed to open excel with data - exiting", logLevel.error);
+                log("Failed to open excel with data - exiting", LogLevel.Error);
                 cleanResources(false);
             }
             else
@@ -242,44 +288,55 @@ namespace emailTest
                 resultList.AddRange(Outlook.filterCustomersByName(customer.name));
             }
 
+#if OFFLINE
+            // for testing purposes, since there might be no arrivals today, take several random arrivals
+            resultList = resultList.Where(x => x.arrivalDate.Date >= DateTime.Now.Date)
+                                   .Take(6)
+                                   .OrderBy(x => x.consignee)
+                                   .ToList();
+#else
             // filter only today's arrival dates
             // filter only loadings sent from the country of the agent
             // order by consignee
             resultList = resultList.Where(x => x.arrivalDate.Date == DateTime.Now.Date)
                                    .OrderBy(x => x.consignee)
                                    .ToList();
+#endif
 
             // check if customer has orders
             if (resultList.Count == 0)
             {
                 str = "No new arrivals totay";
                 log(str);
-
-                arrivals_lbl.Invoke(new MethodInvoker(delegate 
-                                                                {
-                                                                    arrivals_lbl.Text = str;
-                                                                    arrivals_lbl.Visible = true;
-                                                                    arrivals_lbl.Refresh();
-                                                                }));
+                updateLabel(arrivals_lbl, str);
 
                 return;
             }
 
             str = string.Format("{0} new arrivals today", resultList.Count);
             log(str);
+            updateLabel(arrivals_lbl, str);
 
-            arrivals_lbl.Invoke(new MethodInvoker(delegate
-                                                            {
-                                                                arrivals_lbl.Text = str;
-                                                                arrivals_lbl.Visible = true;
-                                                                arrivals_lbl.Refresh();
-                                                            }));
+            // start async thread to get data from ports web
+            // optimization: downloading data from web takes time, so do not do it
+            // in case there are no arrivals today to this specific port
+            if (Utils.bArrivalsToPort(resultList, PortService.PortName.Ashdod) == true)
+            {
+                PortService.getShipsFromPort(PortService.PortName.Ashdod);
+            }
+
+            if (Utils.bArrivalsToPort(resultList, PortService.PortName.Haifa) == true)
+            {
+                PortService.getShipsFromPort(PortService.PortName.Haifa);
+            }
 
             // not all the columns are needed in the report - remove some
             List<Common.ArrivalsReport> targetResList = resultList.ConvertAll(x => new Common.ArrivalsReport
             {
                 jobNo       = x.jobNo,
                 consignee   = x.consignee,
+                toPlace     = x.toPlace,
+                vessel      = x.vessel,
                 arrivalDate = x.arrivalDate,
             });
 
@@ -322,26 +379,14 @@ namespace emailTest
             {
                 str = string.Format("No new sailings in the last {0} days", sailingDays);
                 log(str);
-
-                arrivals_lbl.Invoke(new MethodInvoker(delegate
-                                                                {
-                                                                    sails_lbl.Text = str;
-                                                                    sails_lbl.Visible = true;
-                                                                    sails_lbl.Refresh();
-                                                                }));
+                updateLabel(sails_lbl, str);
 
                 return;
             }
 
             str = string.Format("{0} new sailings in the last {1} days", resultList.Count, sailingDays);
             log(str);
-
-            arrivals_lbl.Invoke(new MethodInvoker(delegate
-                                                            {
-                                                                sails_lbl.Text = str;
-                                                                sails_lbl.Visible = true;
-                                                                sails_lbl.Refresh();
-                                                            }));
+            updateLabel(arrivals_lbl, str);
 
             // not all the columns are needed in the report - remove some
             List<Common.SailsReport> targetResList = resultList.ConvertAll(x => new Common.SailsReport
@@ -360,12 +405,12 @@ namespace emailTest
             sailsDataGrid.Invoke(new MethodInvoker(delegate
                                                             {
                                                                 sailsDataGrid.DataSource = table;
-                                                                sailsDataGrid.DataBindingComplete += SailsDataGrid_DataBindingComplete;
+                                                                sailsDataGrid.DataBindingComplete += sailsDataGrid_DataBindingComplete;
                                                             }));
         }
 
-        // handle for data load complete - colorize table
-        private void SailsDataGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        // handler for data load complete - colorize table
+        private void sailsDataGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             int lastColIndex = sailsDataGrid.Columns.Count - 1;
 
@@ -376,12 +421,12 @@ namespace emailTest
                 // colorize according to sailing data
                 if (sailingDate.Date == DateTime.Now.AddDays(-3).Date)
                 {
-                    row.DefaultCellStyle.BackColor = Color.MediumSeaGreen;
+                    row.DefaultCellStyle.BackColor = Color.HotPink;
                 }
 
                 if (sailingDate.Date == DateTime.Now.AddDays(-2).Date)
                 {
-                    row.DefaultCellStyle.BackColor = Color.DarkSeaGreen;
+                    row.DefaultCellStyle.BackColor = Color.Pink;
                 }
             }
 
@@ -392,12 +437,84 @@ namespace emailTest
             sailsDataGrid.Refresh();
         }
 
-        private void SailsDataGrid_DataBindingComplete(object sender, DataGridViewCellFormattingEventArgs e)
+        // function updates arrivals data grid with data taken from port websites
+        // function should be called when data reading from all ports is complete
+        // and the following lists are filled with data:
+        // Common.ashdodAnchoringList
+        // Common.haifaAnchoringList
+        // function colors rows according to arrival status and adds tooltips with additional data
+        public void arrivalsDataGrid_WebSyncComplete()
         {
-            DataGridViewRow row = sailsDataGrid.Rows[e.RowIndex];// get you required index
-                                                         // check the cell value under your specific column and then you can toggle your colors
-            row.DefaultCellStyle.BackColor = Color.OldLace;
-            log(DateTime.Now.ToShortTimeString());
+            // get columns indices based on Common.ArrivalsReport
+            PortService.PortName    portName        = PortService.PortName.Unknown;
+            int                     toPlaceIndex    = arrivalsDataGrid.Columns["toPlace"].Index;
+            int                     vesselIndex     = arrivalsDataGrid.Columns["vessel"].Index;
+            string                  portNameStr     = string.Empty;
+            string                  toolTipStr      = string.Empty;
+
+            // go over each rows
+            foreach (DataGridViewRow row in arrivalsDataGrid.Rows)
+            {
+                string vesselName = string.Empty;
+                portNameStr = row.Cells[toPlaceIndex].Value.ToString();
+
+                if (portNameStr.ToLower() == "ashdod")
+                {
+                    portName = PortService.PortName.Ashdod;
+                }
+
+                if (portNameStr.ToLower() == "haifa")
+                {
+                    portName = PortService.PortName.Haifa;
+                }
+
+                vesselName = row.Cells[vesselIndex].Value.ToString();
+
+                if (string.IsNullOrEmpty(vesselName) == false)
+                {
+                    // colorize according to arrival status
+                    // get tool tip as well during parsing
+                    switch (PortService.shipStatusInPort(vesselName, portName, out toolTipStr))
+                    {
+                        case PortService.ShipStatus.Arrived:
+                            row.DefaultCellStyle.BackColor = Color.LightGreen;
+                            break;
+                        case PortService.ShipStatus.Expected:
+                            row.DefaultCellStyle.BackColor = Color.LightPink;
+                            break;
+                        case PortService.ShipStatus.Unknown:
+                            row.DefaultCellStyle.BackColor = Color.LightYellow;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    // vessel name is empty, this can happen if excel has not been updated yet
+                    // in such case, mark as unknown
+                    row.DefaultCellStyle.BackColor = Color.LightYellow;
+                    toolTipStr = "Vessel not found";
+                }
+
+                // add tool tip with additional data about this ship
+                foreach (DataGridViewCell cell in row.Cells)
+                {
+                    cell.ToolTipText = toolTipStr;
+                }
+            }
+
+            //sailsDataGrid.DefaultCellStyle.Font = new Font(new FontFamily("Calibri"), 10f);
+            arrivalsDataGrid.AutoGenerateColumns = true;
+            arrivalsDataGrid.AutoResizeColumns();
+            arrivalsDataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+
+            arrivalsDataGrid.Invoke(new MethodInvoker(delegate
+                                                            {
+                                                                arrivalsDataGrid.Refresh();
+                                                            }));
+
+            initCompleteCB();
         }
 
         public DataTable ToDataTable<T>(List<T> items)
@@ -435,7 +552,7 @@ namespace emailTest
             // sanity check
             if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
             {
-                log("Failed to open excel with data - exiting", logLevel.error);
+                log("Failed to open excel with data - exiting", LogLevel.Error);
                 cleanResources(false);
             }
             else
@@ -465,7 +582,7 @@ namespace emailTest
             // sanity check
             if (sailsDataGrid.SelectedRows.Count == 0)
             {
-                log("Nothing was selected, you must select at least one sailing", logLevel.error);
+                log("Nothing was selected, you must select at least one sailing", LogLevel.Error);
                 cleanResources(false);
                 return;
             }

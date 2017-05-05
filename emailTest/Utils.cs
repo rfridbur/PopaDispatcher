@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace emailTest
 {
@@ -35,7 +36,7 @@ namespace emailTest
             catch (Exception e)
             {
                 // fatal: cannot continue
-                OrdersParser._Form.log(string.Format("Failed to create/delete results folder {0}. Error: {1}", resultsDirectoryPath, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to create/delete results folder {0}. Error: {1}", resultsDirectoryPath, e.Message), OrdersParser.LogLevel.Error);
                 return;
             }
         }
@@ -51,7 +52,7 @@ namespace emailTest
                 }
                 catch(Exception e)
                 {
-                    OrdersParser._Form.log(string.Format("Failed to kill process {0}. Error: {1}", processName, e.Message), OrdersParser.logLevel.error);
+                    OrdersParser._Form.log(string.Format("Failed to kill process {0}. Error: {1}", processName, e.Message), OrdersParser.LogLevel.Error);
                 }
             }
         }
@@ -69,7 +70,7 @@ namespace emailTest
             catch (Exception e)
             {
                 // empty cell or could't parse
-                OrdersParser._Form.log(string.Format("Failed to parse date. val: {0}, error: {1}", value, e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to parse date. val: {0}, error: {1}", value, e.Message), OrdersParser.LogLevel.Error);
             };
 
             return val;
@@ -236,7 +237,7 @@ namespace emailTest
                         return Anko.Properties.Resources.DocumentsReceipts;
                     }
                 default:
-                    OrdersParser._Form.log("Unrecognized mail type - cannot find mail template", OrdersParser.logLevel.error);
+                    OrdersParser._Form.log("Unrecognized mail type - cannot find mail template", OrdersParser.LogLevel.Error);
                     return string.Empty;
             }
         }
@@ -266,6 +267,110 @@ namespace emailTest
 
             // return char and concat substring.
             return char.ToUpper(text[0]) + text.Substring(1);
+        }
+
+        // function extracts all tables from HTML page into a DataSet
+        // courtesy of http://www.c-sharpcorner.com/code/3719/convert-html-tables-to-dataset-in-c-sharp.aspx
+        public static DataSet convertHTMLTablesToDataSet(string HTML)
+        {
+            DataSet     ds                  = new DataSet();
+            DataTable   dt                  = null;
+            DataRow     dr                  = null;
+            string      tableExpression     = "<TABLE[^>]*>(.*?)</TABLE>";
+            string      headerExpression    = "<TH[^>]*>(.*?)</TH>";
+            string      rowExpression       = "<TR[^>]*>(.*?)</TR>";
+            string      columnExpression    = "<TD[^>]*>(.*?)</TD>";
+            bool        bHeadersExist        = false;
+            int         iCurrentColumn      = 0;
+            int         iCurrentRow         = 0;
+            string      val                 = string.Empty;
+
+            // get a match for all the tables in the HTML
+            MatchCollection Tables = Regex.Matches(HTML, tableExpression, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+            // loop through each table element
+            foreach (Match Table in Tables)
+            {
+                // reset the current row counter and the header flag
+                iCurrentRow = 0;
+                bHeadersExist = false;
+
+                // add a new table to the DataSet
+                dt = new DataTable();
+
+                // create the relevant amount of columns for this table (use the headers if they exist, otherwise use default names)
+                if (Table.Value.ToUpper().Contains("<TH"))
+                {
+                    // set the HeadersExist flag
+                    bHeadersExist = true;
+
+                    // get a match for all the rows in the table
+                    MatchCollection Headers = Regex.Matches(Table.Value, headerExpression, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+                    // loop through each header element
+                    foreach (Match Header in Headers)
+                    {
+                        // remove HTML formating, replace <br> by new line
+                        val = Header.Groups[1].ToString();
+                        val = Regex.Replace(val, "<br>", Environment.NewLine, RegexOptions.IgnoreCase);
+                        val = Regex.Replace(val, "<.*?>", String.Empty);
+                        dt.Columns.Add(val.Trim());
+                    }
+                }
+
+                if (dt.Columns.Count == 0)
+                {
+                    // failed to find columns at all - move on
+                    continue;
+                }
+
+                // get a match for all the rows in the table
+                MatchCollection Rows = Regex.Matches(Table.Value, rowExpression, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+                // loop through each row element
+                foreach (Match Row in Rows)
+                {
+                    // only loop through the row if it isn't a header row
+                    if (!(iCurrentRow == 0 && bHeadersExist))
+                    {
+                        // create a new row and reset the current column counter
+                        dr = dt.NewRow();
+                        iCurrentColumn = 0;
+                        
+                        // get a match for all the columns in the row
+                        MatchCollection Columns = Regex.Matches(Row.Value, columnExpression, RegexOptions.Multiline | RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+                        // loop through each column element
+                        foreach (Match Column in Columns)
+                        {
+                            // add the value to the DataRow
+                            val = Column.Groups[1].ToString();
+                            val = Regex.Replace(val, "<br>", Environment.NewLine, RegexOptions.IgnoreCase);
+                            val = Regex.Replace(val, "<.*?>", String.Empty);
+                            dr[iCurrentColumn] = val.Trim();
+
+                            // increase the current column
+                            iCurrentColumn++;
+                        }
+
+                        // add the DataRow to the DataTable
+                        dt.Rows.Add(dr);
+                    }
+
+                    // increase the current row counter
+                    iCurrentRow++;
+                }
+
+                // add the DataTable to the DataSet
+                ds.Tables.Add(dt);
+            }
+            return ds;
+        }
+
+        // function verifies is there are arrivals to certain ports
+        public static bool bArrivalsToPort(List<Common.Order> resultList, PortService.PortName portName)
+        {
+            return resultList.Any(x => x.toPlace.ToLower() == portName.ToString().ToLower());
         }
     }
 }

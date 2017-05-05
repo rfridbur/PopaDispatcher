@@ -27,8 +27,8 @@ namespace emailTest
             catch (Exception e)
             {
                 // fatal: cannot continue
-                OrdersParser._Form.log(string.Format("Failed to open outlook instance. Error: {0}", e.Message), OrdersParser.logLevel.error);
-                OrdersParser._Form.log(string.Format("Try to restart your PC or application"), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open outlook instance. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
+                OrdersParser._Form.log(string.Format("Try to restart your PC or application"), OrdersParser.LogLevel.Error);
                 return;
             }
         }
@@ -466,7 +466,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open outlook inbox folder. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to open outlook inbox folder. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 return;
             }
 
@@ -513,7 +513,7 @@ namespace emailTest
 
             // no file was found
             OrdersParser._Form.log(string.Format("Failed to find any Tannco excel file. Searched for {0} mails in inbox", 
-                                                  inboxItems.Count), OrdersParser.logLevel.error);
+                                                  inboxItems.Count), OrdersParser.LogLevel.Error);
 
             // plannedImportExcel should be automatically extracted from outlook
             // if file is empty, it means that extraction failed therefore,
@@ -570,7 +570,7 @@ namespace emailTest
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to create mail. Error: {0}", e.Message), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Failed to create mail. Error: {0}", e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
@@ -621,7 +621,7 @@ namespace emailTest
             }
             else
             {
-                OrdersParser._Form.log(string.Format("Cannot find signatue logo in {0}", signatureFilePath), OrdersParser.logLevel.error);
+                OrdersParser._Form.log(string.Format("Cannot find signatue logo in {0}", signatureFilePath), OrdersParser.LogLevel.Error);
             }
 
             bodyMsg += addHtmlPreffix();

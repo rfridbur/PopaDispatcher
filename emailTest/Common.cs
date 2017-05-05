@@ -135,6 +135,8 @@ namespace emailTest
         {
             public int      jobNo;          // A
             public string   consignee;      // E
+            public string   toPlace;        // P
+            public string   vessel;         // S
             public DateTime arrivalDate;    // Q
         }
 
@@ -161,5 +163,30 @@ namespace emailTest
             public string   voyage;         // T
             public string   MBL;            // U
         }
+
+        // outer join list of Haifa and Ashdod ports
+        public class Anchoring
+        {
+            public int      importManifest;
+            public int      exportManifest;
+            public string   shipName;
+            public string   importCargo;
+            public string   exportCargo;
+            public string   status; // or "place code"
+            public string   platform;
+            public string   operatingAgent;
+            public string   serviceLinePorts;
+            public string   partners;
+            public DateTime exportStartTime;
+            public DateTime exportEndTime;
+            public DateTime arrivalDate;
+            public bool     bScheduled;
+            public string   yardStatus;
+            public string   flag;
+            public string   lastPort;
+        }
+
+        public static List<Anchoring> ashdodAnchoringList;
+        public static List<Anchoring> haifaAnchoringList;
     }
 }

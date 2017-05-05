@@ -36,12 +36,14 @@
             this.bookConfirm_btn = new System.Windows.Forms.Button();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.arrivalsTab = new System.Windows.Forms.TabPage();
+            this.arrivals_lbl = new System.Windows.Forms.Label();
             this.arrivalsDataGrid = new System.Windows.Forms.DataGridView();
             this.sailsTab = new System.Windows.Forms.TabPage();
+            this.sails_lbl = new System.Windows.Forms.Label();
             this.docReceipts_btn = new System.Windows.Forms.Button();
             this.sailsDataGrid = new System.Windows.Forms.DataGridView();
-            this.arrivals_lbl = new System.Windows.Forms.Label();
-            this.sails_lbl = new System.Windows.Forms.Label();
+            this.ashdodLinkLbl = new System.Windows.Forms.LinkLabel();
+            this.haifaLinkLbl = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.picbox)).BeginInit();
             this.tabControl.SuspendLayout();
             this.arrivalsTab.SuspendLayout();
@@ -126,6 +128,8 @@
             // 
             // arrivalsTab
             // 
+            this.arrivalsTab.Controls.Add(this.haifaLinkLbl);
+            this.arrivalsTab.Controls.Add(this.ashdodLinkLbl);
             this.arrivalsTab.Controls.Add(this.arrivals_lbl);
             this.arrivalsTab.Controls.Add(this.arrivalsDataGrid);
             this.arrivalsTab.Location = new System.Drawing.Point(4, 30);
@@ -135,6 +139,16 @@
             this.arrivalsTab.TabIndex = 0;
             this.arrivalsTab.Text = "Today\'s arrivals";
             this.arrivalsTab.UseVisualStyleBackColor = true;
+            // 
+            // arrivals_lbl
+            // 
+            this.arrivals_lbl.AutoSize = true;
+            this.arrivals_lbl.Font = new System.Drawing.Font("Calibri", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.arrivals_lbl.Location = new System.Drawing.Point(6, 3);
+            this.arrivals_lbl.Name = "arrivals_lbl";
+            this.arrivals_lbl.Size = new System.Drawing.Size(86, 21);
+            this.arrivals_lbl.TabIndex = 1;
+            this.arrivals_lbl.Text = "arrivals_lbl";
             // 
             // arrivalsDataGrid
             // 
@@ -162,6 +176,16 @@
             this.sailsTab.TabIndex = 1;
             this.sailsTab.Text = "Sails";
             this.sailsTab.UseVisualStyleBackColor = true;
+            // 
+            // sails_lbl
+            // 
+            this.sails_lbl.AutoSize = true;
+            this.sails_lbl.Font = new System.Drawing.Font("Calibri", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.sails_lbl.Location = new System.Drawing.Point(6, 3);
+            this.sails_lbl.Name = "sails_lbl";
+            this.sails_lbl.Size = new System.Drawing.Size(65, 21);
+            this.sails_lbl.TabIndex = 10;
+            this.sails_lbl.Text = "sails_lbl";
             // 
             // docReceipts_btn
             // 
@@ -191,25 +215,25 @@
             this.sailsDataGrid.Size = new System.Drawing.Size(874, 202);
             this.sailsDataGrid.TabIndex = 0;
             // 
-            // arrivals_lbl
+            // ashdodLinkLbl
             // 
-            this.arrivals_lbl.AutoSize = true;
-            this.arrivals_lbl.Font = new System.Drawing.Font("Calibri", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.arrivals_lbl.Location = new System.Drawing.Point(6, 3);
-            this.arrivals_lbl.Name = "arrivals_lbl";
-            this.arrivals_lbl.Size = new System.Drawing.Size(86, 21);
-            this.arrivals_lbl.TabIndex = 1;
-            this.arrivals_lbl.Text = "arrivals_lbl";
+            this.ashdodLinkLbl.AutoSize = true;
+            this.ashdodLinkLbl.Location = new System.Drawing.Point(905, 30);
+            this.ashdodLinkLbl.Name = "ashdodLinkLbl";
+            this.ashdodLinkLbl.Size = new System.Drawing.Size(97, 21);
+            this.ashdodLinkLbl.TabIndex = 2;
+            this.ashdodLinkLbl.TabStop = true;
+            this.ashdodLinkLbl.Text = "Ashdod Port";
             // 
-            // sails_lbl
+            // HaifaLinkLbl
             // 
-            this.sails_lbl.AutoSize = true;
-            this.sails_lbl.Font = new System.Drawing.Font("Calibri", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.sails_lbl.Location = new System.Drawing.Point(6, 3);
-            this.sails_lbl.Name = "sails_lbl";
-            this.sails_lbl.Size = new System.Drawing.Size(65, 21);
-            this.sails_lbl.TabIndex = 10;
-            this.sails_lbl.Text = "sails_lbl";
+            this.haifaLinkLbl.AutoSize = true;
+            this.haifaLinkLbl.Location = new System.Drawing.Point(905, 51);
+            this.haifaLinkLbl.Name = "HaifaLinkLbl";
+            this.haifaLinkLbl.Size = new System.Drawing.Size(80, 21);
+            this.haifaLinkLbl.TabIndex = 3;
+            this.haifaLinkLbl.TabStop = true;
+            this.haifaLinkLbl.Text = "Haifa Port";
             // 
             // OrdersParser
             // 
@@ -254,5 +278,7 @@
         private System.Windows.Forms.Button docReceipts_btn;
         private System.Windows.Forms.Label arrivals_lbl;
         private System.Windows.Forms.Label sails_lbl;
+        private System.Windows.Forms.LinkLabel haifaLinkLbl;
+        private System.Windows.Forms.LinkLabel ashdodLinkLbl;
     }
 }
