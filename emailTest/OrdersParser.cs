@@ -309,7 +309,7 @@ namespace emailTest
                 str = "No new arrivals totay";
                 log(str);
                 updateLabel(arrivals_lbl, str);
-
+                initCompleteCB();
                 return;
             }
 
@@ -386,7 +386,7 @@ namespace emailTest
 
             str = string.Format("{0} new sailings in the last {1} days", resultList.Count, sailingDays);
             log(str);
-            updateLabel(arrivals_lbl, str);
+            updateLabel(sails_lbl, str);
 
             // not all the columns are needed in the report - remove some
             List<Common.SailsReport> targetResList = resultList.ConvertAll(x => new Common.SailsReport
