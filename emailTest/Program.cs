@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace emailTest
+namespace Anko
 {
     static class Program
     {

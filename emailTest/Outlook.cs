@@ -7,7 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using OutlookInterop = Microsoft.Office.Interop.Outlook;
 
-namespace emailTest
+namespace Anko
 {
     // class has no constructor and has static methods since should not have instances
     // use as singleton
@@ -105,7 +105,7 @@ namespace emailTest
 
                 for (int j = 0; j < cols; j++)
                 {
-                    // capitylize the titles (first row)
+                    // capitalize the titles (first row)
                     if (i == 0)
                     {
                         valuesArray[0, j] = Utils.uppercaseFirst(valuesArray[0,j].ToString());
@@ -206,7 +206,9 @@ namespace emailTest
             object[,] valuesArray = Utils.generateObjectFromList<Common.OrderReport>(targetResList, out rows, out cols);
 
             // create new excel file with this data
-            outputFileName = Path.Combine(Utils.resultsDirectoryPath, string.Format("{0}_{1}.{2}", customer.name, now.ToString(Common.DATE_FORMAT), "xlsx"));
+            // to make sure that file name is unique add high time accuracey
+            string extendedTimeFormat = string.Concat(Common.DATE_FORMAT, "_fffffff");
+            outputFileName = Path.Combine(Utils.resultsDirectoryPath, string.Format("{0}_{1}.{2}", customer.name, now.ToString(extendedTimeFormat), "xlsx"));
             Excel.generateCustomerFile(valuesArray, rows, cols, customer, outputFileName);
 
             // send mail to customer
@@ -301,7 +303,7 @@ namespace emailTest
             }
         }
 
-        // function goes over the selevted rows from the data grid and sends mails to agents
+        // function goes over the selected rows from the data grid and sends mails to agents
         private static void prepareDocumentsReceiptsMailToAgent(Common.Agent agent, List<Common.SailsReport> report)
         {
             string outputFileName = string.Empty;
@@ -350,7 +352,7 @@ namespace emailTest
             sendMail(mailDetails);
         }
 
-        // function prepares mails of future boakings to all shipping companies
+        // function prepares mails of future bookings to all shipping companies
         // possible optimization: parallel foreach
         public static void prepareBookingMailsToAllAgents()
         {
@@ -431,6 +433,13 @@ namespace emailTest
             string name = customerName.ToLower();
             List<Common.Order> res = new List<Common.Order>();
 
+            // order list can be null if no Tanko excel was supplied, or there was a parsing error
+            if (Common.orderList == null)
+            {
+                // order list is empty
+                return res;
+            }
+
             // most of the customers having long names, therefore, 'contains' is enough
             // while, some customers having short name (e.g. bg), and 'contains' is useless
             // for customers with name of 2 chars, try 'starts with' or starts with dots e.g. b.g.
@@ -489,11 +498,11 @@ namespace emailTest
                         if (string.IsNullOrEmpty((string)test))
                         {
                             // real attachment (not embedded pic/logo)
-                            // check if attachment matches, since sende might send other mails as well
+                            // check if attachment matches, since sender might send other mails as well
                             if (item.DisplayName.ToLower().Contains(tancoOrdersFileName.ToLower()))
                             {
                                 // match - save this attachment into file and bail out
-                                OrdersParser._Form.log("Found Tanco shipping to IL file");
+                                OrdersParser._Form.log("Found Tanko shipping to IL file");
                                 OrdersParser._Form.log(string.Format("Received date: {0}, FileName: {1}, Sender: {2}", 
                                                                       newEmail.ReceivedTime.ToString(Common.DATE_FORMAT),
                                                                       item.DisplayName,
@@ -512,7 +521,7 @@ namespace emailTest
             }
 
             // no file was found
-            OrdersParser._Form.log(string.Format("Failed to find any Tannco excel file. Searched for {0} mails in inbox", 
+            OrdersParser._Form.log(string.Format("Failed to find any Tanko excel file. Searched for {0} mails in inbox", 
                                                   inboxItems.Count), OrdersParser.LogLevel.Error);
 
             // plannedImportExcel should be automatically extracted from outlook
@@ -520,7 +529,7 @@ namespace emailTest
             // user is alsked to provide a file 
             if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
             {
-                OrdersParser._Form.log("Choose Tanco orders excel file");
+                OrdersParser._Form.log("Choose Tanko orders excel file");
 #if OFFLINE
                 Common.plannedImportExcel = @"C:\Users\rfridbur\Downloads\Tanco_Planned_Import_to_IL.xls";
 #else
@@ -555,7 +564,7 @@ namespace emailTest
             string                      signatureFilePath   = Path.Combine(Directory.GetCurrentDirectory(), signatureName);
             string                      tempMsg             = string.Empty;
 
-            // generate logo file from embeded resource (image)
+            // generate logo file from embedded resource (image)
             if (File.Exists(signatureFilePath) == false)
             {
                 ImageConverter converter = new ImageConverter();
@@ -608,7 +617,7 @@ namespace emailTest
                                           Path.GetFileName(filePath));
             }
 
-            // verify that sifnature file exists
+            // verify that signature file exists
             if (File.Exists(signatureFilePath) == true)
             {
                 // prepare body
@@ -621,7 +630,7 @@ namespace emailTest
             }
             else
             {
-                OrdersParser._Form.log(string.Format("Cannot find signatue logo in {0}", signatureFilePath), OrdersParser.LogLevel.Error);
+                OrdersParser._Form.log(string.Format("Cannot find signature logo in {0}", signatureFilePath), OrdersParser.LogLevel.Error);
             }
 
             bodyMsg += addHtmlPreffix();
@@ -646,8 +655,8 @@ namespace emailTest
         }
 
         // function adds mail body into HTML format, based on the following parameters:
-        // * mailType:       needed to decide which template from embeded resource to use
-        // * bodyParameters: the template might have variabls, which are needed to be replaced from this dic
+        // * mailType:       needed to decide which template from embedded resource to use
+        // * bodyParameters: the template might have variables, which are needed to be replaced from this dic
         private static string addMailBodyMsg(Common.MailType mailType, Dictionary<string, string> bodyParameters)
         {
             string              embededResource = Utils.getResourceNameFromMailType(mailType);
@@ -656,8 +665,8 @@ namespace emailTest
             string              font            = "calibri";
             HorizontalAlignment alignment       = HorizontalAlignment.Left;
 
-            // parse the mail body from embeded file into HTML format
-            // replace all the parameter (if exist) by values from disctionary
+            // parse the mail body from embedded file into HTML format
+            // replace all the parameter (if exist) by values from dictionary
             modifiedText = Utils.extractParameterFromDictionary(embededResource, bodyParameters);
 
             // determine the language to know which HTML params to set
@@ -677,14 +686,14 @@ namespace emailTest
         }
 
         // function adds signature into HTML format
-        // assumption: signatureName (logo) is already added as embeded attachement
+        // assumption: signatureName (logo) is already added as embedded attachment
         //             otherwise, this addition will not do much
         private static string addMailSignature(string signatureName)
         {
             string text = string.Empty;
             string msg  = string.Empty;
 
-            // parse the signature from embeded file into HTML format
+            // parse the signature from embedded file into HTML format
             text = Anko.Properties.Resources.SignatureText;
             foreach (string line in text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
             {
@@ -692,7 +701,7 @@ namespace emailTest
             }
 
             // add the signature logo
-            // (added as embedede atachment outside of this func - here we just add into HTML)
+            // (added as embedded attachment outside of this func - here we just add into HTML)
             msg += string.Format("<div align=left; dir=ltr><img src=\"cid:{0}\" width=246 height=213></div>", signatureName);
 
             return msg;

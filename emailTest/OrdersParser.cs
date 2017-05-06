@@ -5,18 +5,19 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
-using System.Reflection;
 
-namespace emailTest
+namespace Anko
 {
     public partial class OrdersParser : Form
     {
         public static OrdersParser _Form;
 
+        // contractor
         public OrdersParser()
         {
             InitializeComponent();
 
+            // form visualization init
             buttonsSetVisible(false);
             animateGif(true);
             arrivals_lbl.Text = string.Empty;
@@ -24,7 +25,7 @@ namespace emailTest
             ashdodLinkLbl.LinkClicked += AshdodLinkLbl_LinkClicked;
             haifaLinkLbl.LinkClicked += HaifaLinkLbl_LinkClicked;
 
-            // needed for logs from other classes
+            // needed to get form controls from other classed
             _Form = this;
 
             log("Welcome!");
@@ -40,17 +41,8 @@ namespace emailTest
                                             // create temp results folder
                                             Utils.createResultsFolder();
 
-                                            // parse local DB for customer details
-                                            Excel.getCustomersDetails();
-
-                                            // parse the Tanko excel params to load DB from outlook
-                                            Excel.getTankoExcelParameters();
-
-                                            // parse the local DB for agents details
-                                            Excel.getAgentsDetails();
-
-                                            // parse the local DB for shipping companies details
-                                            Excel.getShippingCompaniesDetais();
+                                            // parse local DB
+                                            Excel.getDetailsFromLocalDb();
 
                                             // fetch and save to file the most updated orders excel file
                                             Outlook.readLastOrdersFile();
@@ -58,7 +50,7 @@ namespace emailTest
                                             // parse the orders DB
                                             Excel.getOrderDetails();
 
-                                            // today's arrivales
+                                            // today's arrivals
                                             updateArrivalsGrid();
 
                                             // yesterday's sails
@@ -66,74 +58,15 @@ namespace emailTest
                                         });
         }
 
-        // hyperlink for haifa port
-        private void HaifaLinkLbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            // specify that the link was visited
-            if (haifaLinkLbl.InvokeRequired == true)
-            {
-                haifaLinkLbl.Invoke(new MethodInvoker(delegate { haifaLinkLbl.LinkVisited = true; }));
-            }
-            else
-            {
-                haifaLinkLbl.LinkVisited = true;
-            }
-
-            // navigate to a URL
-            System.Diagnostics.Process.Start(PortService.HAIFA_URL);
-        }
-
-        //hyperlink for port ashdod port
-        private void AshdodLinkLbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            // specify that the link was visited
-            if (ashdodLinkLbl.InvokeRequired == true)
-            {
-                ashdodLinkLbl.Invoke(new MethodInvoker(delegate { ashdodLinkLbl.LinkVisited = true; }));
-            }
-            else
-            {
-                ashdodLinkLbl.LinkVisited = true;
-            }
-
-            // navigate to a URL
-            System.Diagnostics.Process.Start(PortService.ASHDOD_URL);
-        }
-
-        // handler for "prepare mails" button click
-        private void parse_btn_Click(object sender, EventArgs e)
-        {
-            buttonsSetVisible(false);
-
-            if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
-            {
-                log("Failed to open excel with data - exiting", LogLevel.Error);
-                cleanResources(false);
-            }
-            else
-            {
-                animateGif(true);
-
-                // parsing is long, so in order not to block the GUI
-                // start in new task
-                Task.Factory.StartNew(() =>
-                                            {
-                                                // prepare mails for all customer based on DB data
-                                                Outlook.prepareOrderMailsToAllCustomers();
-                                            })
-                            // when done, call this CB
-                            .ContinueWith(mailCompleteCB);
-            }
-        }
-
         // function disposes all used classes
         private void cleanResources(bool bSuccess)
         {
             // dispose classes
-            Excel.dispose();
-            Outlook.dispose();
+            //Excel.dispose();
+            //Outlook.dispose();
 
             animateGif(false);
+            buttonsSetVisible(true);
 
             if (bSuccess == true)
             {
@@ -155,23 +88,6 @@ namespace emailTest
             }
         }
 
-        // function enables/disable form buttons
-        // due to cross-threads operations, make sure to invoke when asked from different thread
-        private void buttonsSetVisible(bool bVisible)
-        {
-            foreach (Button btn in new List<Button>() { reports_btn , loadConfirm_btn , bookConfirm_btn , docReceipts_btn})
-            {
-                if (btn.InvokeRequired == true)
-                {
-                    btn.Invoke(new MethodInvoker(delegate { btn.Enabled = bVisible; }));
-                }
-                else
-                {
-                    btn.Enabled = bVisible;
-                }
-            }
-        }
-
         // CB called when mails are prepared (end of program)
         private void mailCompleteCB(Task obj)
         {
@@ -186,6 +102,21 @@ namespace emailTest
             log(string.Format("Init is complete"));
         }
 
+        // function updates lbl.Text with input text
+        public void updateLabel(Label lbl, string text)
+        {
+            if (lbl.InvokeRequired == true)
+            {
+                lbl.Invoke(new MethodInvoker(delegate { lbl.Text = text; lbl.Refresh(); }));
+            }
+            else
+            {
+                lbl.Text = text;
+                lbl.Refresh();
+            }
+        }
+
+        #region Log
         public enum LogLevel
         {
             Info,
@@ -207,20 +138,6 @@ namespace emailTest
             }
         }
 
-        // function updates lbl.Text with input text
-        public void updateLabel(Label lbl, string text)
-        {
-            if (lbl.InvokeRequired == true)
-            {
-                lbl.Invoke(new MethodInvoker(delegate { lbl.Text = text; lbl.Refresh(); }));
-            }
-            else
-            {
-                lbl.Text = text;
-                lbl.Refresh();
-            }
-        }
-        
         // function updates GUI, therefore, must be called on same thread
         private void logThreadSafe(string msg, LogLevel level)
         {
@@ -248,33 +165,9 @@ namespace emailTest
             //logTextBox.ScrollToCaret();
             logTextBox.Refresh();
         }
+        #endregion
 
-        private void loadConfirm_btn_Click(object sender, EventArgs e)
-        {
-            buttonsSetVisible(false);
-
-            // sanity check
-            if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
-            {
-                log("Failed to open excel with data - exiting", LogLevel.Error);
-                cleanResources(false);
-            }
-            else
-            {
-                animateGif(true);
-
-                // parsing is long, so in order not to block the GUI
-                // start in new task
-                Task.Factory.StartNew(() =>
-                                            {
-                                                // prepare mails for all customer based on DB data
-                                                Outlook.prepareLoadingMailsToAllAgents();
-                                            })
-                            // when done, call this CB
-                            .ContinueWith(mailCompleteCB);
-            }
-        }
-
+        #region Grids
         // function updates today's arrivals data grid
         private void updateArrivalsGrid()
         {
@@ -306,7 +199,7 @@ namespace emailTest
             // check if customer has orders
             if (resultList.Count == 0)
             {
-                str = "No new arrivals totay";
+                str = "No new arrivals today";
                 log(str);
                 updateLabel(arrivals_lbl, str);
                 initCompleteCB();
@@ -445,7 +338,7 @@ namespace emailTest
         // function colors rows according to arrival status and adds tooltips with additional data
         public void arrivalsDataGrid_WebSyncComplete()
         {
-            // get columns indices based on Common.ArrivalsReport
+            // get columns based on Common.ArrivalsReport
             PortService.PortName    portName        = PortService.PortName.Unknown;
             int                     toPlaceIndex    = arrivalsDataGrid.Columns["toPlace"].Index;
             int                     vesselIndex     = arrivalsDataGrid.Columns["vessel"].Index;
@@ -516,32 +409,59 @@ namespace emailTest
 
             initCompleteCB();
         }
+        #endregion
 
-        public DataTable ToDataTable<T>(List<T> items)
+        #region Buttons
+        // handler for "prepare mails" button click
+        private void parse_btn_Click(object sender, EventArgs e)
         {
-            DataTable dataTable = new DataTable(typeof(T).Name);
+            buttonsSetVisible(false);
 
-            //Get all the properties
-            PropertyInfo[] Props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (PropertyInfo prop in Props)
+            // sanity check that excel file was parsed successfully
+            if (Utils.bValidOrders() == false)
             {
-                //Defining type of data column gives proper data table 
-                var type = (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(prop.PropertyType) : prop.PropertyType);
-                //Setting column names as Property names
-                dataTable.Columns.Add(prop.Name, type);
+                // file doesn't exist
+                log("Orders are not valid", LogLevel.Error);
+                return;
             }
-            foreach (T item in items)
+
+            animateGif(true);
+
+            // parsing is long, so in order not to block the GUI
+            // start in new task
+            Task.Factory.StartNew(() =>
             {
-                var values = new object[Props.Length];
-                for (int i = 0; i < Props.Length; i++)
-                {
-                    //inserting property values to datatable rows
-                    values[i] = Props[i].GetValue(item, null);
-                }
-                dataTable.Rows.Add(values);
+                // prepare mails for all customer based on DB data
+                Outlook.prepareOrderMailsToAllCustomers();
+            })
+                        // when done, call this CB
+                        .ContinueWith(mailCompleteCB);
+        }
+
+        // function sends mails to agents asking for loading confirmation
+        private void loadConfirm_btn_Click(object sender, EventArgs e)
+        {
+            buttonsSetVisible(false);
+
+            // sanity check that excel file was parsed successfully
+            if (Utils.bValidOrders() == false)
+            {
+                // file doesn't exist
+                log("Orders are not valid", LogLevel.Error);
+                return;
             }
-            //put a breakpoint here and check datatable
-            return dataTable;
+
+            animateGif(true);
+
+            // parsing is long, so in order not to block the GUI
+            // start in new task
+            Task.Factory.StartNew(() =>
+            {
+                // prepare mails for all customer based on DB data
+                Outlook.prepareLoadingMailsToAllAgents();
+            })
+                        // when done, call this CB
+                        .ContinueWith(mailCompleteCB);
         }
 
         // function sends emails to all shipping companies with future bookings
@@ -549,29 +469,28 @@ namespace emailTest
         {
             buttonsSetVisible(false);
 
-            // sanity check
-            if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
+            // sanity check that excel file was parsed successfully
+            if (Utils.bValidOrders() == false)
             {
-                log("Failed to open excel with data - exiting", LogLevel.Error);
-                cleanResources(false);
+                // file doesn't exist
+                log("Orders are not valid", LogLevel.Error);
+                return;
             }
-            else
-            {
-                animateGif(true);
 
-                // parsing is long, so in order not to block the GUI
-                // start in new task
-                Task.Factory.StartNew(() =>
-                                            {
-                                                // prepare mails for all customer based on DB data
-                                                Outlook.prepareBookingMailsToAllAgents();
-                                            })
-                            // when done, call this CB
-                            .ContinueWith(mailCompleteCB);
-            }
+            animateGif(true);
+
+            // parsing is long, so in order not to block the GUI
+            // start in new task
+            Task.Factory.StartNew(() =>
+                                        {
+                                            // prepare mails for all customer based on DB data
+                                            Outlook.prepareBookingMailsToAllAgents();
+                                        })
+                        // when done, call this CB
+                        .ContinueWith(mailCompleteCB);
         }
 
-        // function sends document recepts requests from agents
+        // function sends document receipts requests from agents
         private void docReceipts_btn_Click(object sender, EventArgs e)
         {
             List<Common.SailsReport> targetResList = new List<Common.SailsReport>();
@@ -614,5 +533,59 @@ namespace emailTest
                         .ContinueWith(mailCompleteCB);
 
         }
+
+        // function enables/disable form buttons
+        // due to cross-threads operations, make sure to invoke when asked from different thread
+        private void buttonsSetVisible(bool bVisible)
+        {
+            foreach (Button btn in new List<Button>() { reports_btn , loadConfirm_btn , bookConfirm_btn , docReceipts_btn})
+            {
+                if (btn.InvokeRequired == true)
+                {
+                    btn.Invoke(new MethodInvoker(delegate { btn.Enabled = bVisible; }));
+                }
+                else
+                {
+                    btn.Enabled = bVisible;
+                }
+            }
+        }
+        #endregion
+
+        #region Hyperlinks
+        // hyperlink for Haifa port
+        private void HaifaLinkLbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // specify that the link was visited
+            if (haifaLinkLbl.InvokeRequired == true)
+            {
+                haifaLinkLbl.Invoke(new MethodInvoker(delegate { haifaLinkLbl.LinkVisited = true; }));
+            }
+            else
+            {
+                haifaLinkLbl.LinkVisited = true;
+            }
+
+            // navigate to a URL
+            System.Diagnostics.Process.Start(PortService.HAIFA_URL);
+        }
+
+        //hyperlink for port ashdod port
+        private void AshdodLinkLbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // specify that the link was visited
+            if (ashdodLinkLbl.InvokeRequired == true)
+            {
+                ashdodLinkLbl.Invoke(new MethodInvoker(delegate { ashdodLinkLbl.LinkVisited = true; }));
+            }
+            else
+            {
+                ashdodLinkLbl.LinkVisited = true;
+            }
+
+            // navigate to a URL
+            System.Diagnostics.Process.Start(PortService.ASHDOD_URL);
+        }
+        #endregion
     }
 }

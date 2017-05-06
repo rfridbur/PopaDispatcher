@@ -1,4 +1,4 @@
-﻿namespace emailTest
+﻿namespace Anko
 {
     partial class OrdersParser
     {

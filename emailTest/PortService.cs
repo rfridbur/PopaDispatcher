@@ -6,7 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Linq;
 
-namespace emailTest
+namespace Anko
 {
     class PortService
     {
@@ -16,6 +16,7 @@ namespace emailTest
         private static string[] expectedStrList = { "anchor", "sailed", "expected", "צפויה", "מחוץ לנמל" };
         private static int webDataReadyCounter = 0;
 
+        // function fetches ships data from ports using web browser
         public static void getShipsFromPort(PortName portName)
         {
             string                                  url     = string.Empty;
@@ -105,6 +106,7 @@ namespace emailTest
             OrdersParser._Form.arrivalsDataGrid_WebSyncComplete();
         }
 
+        // function generates list of anchoring ships in Haifa port
         private static List<Common.Anchoring> generateTableForHaifaPort(DataSet dataSet)
         {
             string      newLineStr          = Environment.NewLine;
@@ -118,7 +120,7 @@ namespace emailTest
             DataTable dt = dataSet.Tables[0];
 
             // add all the records from a given table into AnchoringPortList
-            // usie Trim() only in case of splits, since all atomic variables are already trimmed
+            // use Trim() only in case of splits, since all atomic variables are already trimmed
             foreach (DataRow row in dt.Rows)
             {
                 Common.Anchoring anchoringShip = new Common.Anchoring();
@@ -130,8 +132,16 @@ namespace emailTest
                 tmpArr = val.Split(stringSeparators, StringSplitOptions.None);
                 if (tmpArr.Length == 2)
                 {
-                    anchoringShip.importManifest = Convert.ToInt32(tmpArr[0].Trim());
-                    anchoringShip.exportManifest = Convert.ToInt32(tmpArr[0].Trim());
+                    // input validation - there might be cases of empty manifest
+                    // in such case, manifest will remain 0
+                    if (string.IsNullOrEmpty(tmpArr[0]) == false)
+                    {
+                        anchoringShip.importManifest = Convert.ToInt32(tmpArr[0].Trim());
+                    }
+                    if (string.IsNullOrEmpty(tmpArr[0]) == false)
+                    {
+                        anchoringShip.exportManifest = Convert.ToInt32(tmpArr[1].Trim());
+                    }
                 }
 
                 // col[1] ship name
@@ -143,7 +153,7 @@ namespace emailTest
                 if (tmpArr.Length == 2)
                 {
                     anchoringShip.importCargo = tmpArr[0].Trim();
-                    anchoringShip.exportCargo = tmpArr[0].Trim();
+                    anchoringShip.exportCargo = tmpArr[1].Trim();
                 }
 
                 // col[3] status
@@ -187,6 +197,7 @@ namespace emailTest
             return anchoringPortList;
         }
 
+        // function generates list of anchoring ships in Ashdod port
         private static List<Common.Anchoring> generateTableForAshdodPort(DataSet dataSet)
         {
             string      newLineStr          = Environment.NewLine;
@@ -201,7 +212,7 @@ namespace emailTest
             foreach (DataTable dt in dataSet.Tables)
             {
                 // add all the records from a given table into AnchoringPortList
-                // usie Trim() only in case of splits, since all atomic variables are already trimmed
+                // use Trim() only in case of splits, since all atomic variables are already trimmed
                 foreach (DataRow row in dt.Rows)
                 {
                     Common.Anchoring anchoringShip = new Common.Anchoring();
@@ -244,7 +255,7 @@ namespace emailTest
                     // col[7] agent
                     anchoringShip.operatingAgent = row[7].ToString().Replace(newLineStr, string.Empty).Trim();
 
-                    // col[8] shceduled
+                    // col[8] scheduled
                     anchoringShip.bScheduled = false;
                     if (row[8].ToString().ToLower() == "yes")
                     {
@@ -304,7 +315,7 @@ namespace emailTest
 
                 if (templist.Count > 0)
                 {
-                    // haifa port has the following statuses:
+                    // Haifa port has the following statuses:
                     // integer, means that ship is at berth
                     // anchor, sailed, expected, means that ship is not at berth
                     status = templist.FirstOrDefault().status;
@@ -313,7 +324,7 @@ namespace emailTest
 
                     if (int.TryParse(status, out res) == true)
                     {
-                        // the value does't matter, but ship has arrived
+                        // the value doesn't matter, but ship has arrived
                         summaryStr = string.Format("Status: Arrived\r\nArrival Date: {0}", arrivalDateStr);
                         return ShipStatus.Arrived;
                     }
@@ -328,7 +339,7 @@ namespace emailTest
 
                 if (templist.Count > 0)
                 {
-                    // ashdod port has only 3 possible hebrew string statuses
+                    // Ashdod port has only 3 possible Hebrew string statuses
                     status = templist.FirstOrDefault().status;
                     arrivalDateStr = templist.FirstOrDefault().arrivalDate.ToString(dateFormat);
 

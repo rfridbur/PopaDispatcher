@@ -1,8 +1,7 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace emailTest
+namespace Anko
 {
     class Common
     {
@@ -20,7 +19,7 @@ namespace emailTest
         // agents are internal works
         public class Agent : MailingRecepient
         {
-            // Ctor
+            // constructor
             // * initialize 'countries' list
             public Agent()
             {
@@ -31,7 +30,7 @@ namespace emailTest
             public List<string> countries;
         }
 
-        // shippingCompany class holds all shipping companies and agenst
+        // shippingCompany class holds all shipping companies and agents
         // e.g. ZIM, MSC
         public class ShippingCompany : MailingRecepient
         {
@@ -39,10 +38,10 @@ namespace emailTest
             public string id;
         }
 
-        // mail recepient holds all mailing details
+        // mail recipient holds all mailing details
         public class MailingRecepient
         {
-            // Ctor
+            // constructor
             // * initialize 'to' and 'cc' lists
             public MailingRecepient()
             {

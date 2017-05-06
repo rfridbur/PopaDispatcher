@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using ExcelInerop = Microsoft.Office.Interop.Excel;
 
-namespace emailTest
+namespace Anko
 {
     // class has no constructor and has static methods since should not have instances
     // use as singleton
@@ -58,14 +56,17 @@ namespace emailTest
             killExcel();
         }
 
+        // excel obj global variables
         private static ExcelInerop.Worksheet   excelSheet   = null;
         private static ExcelInerop.Workbook    workBook     = null;
         private static ExcelInerop.Application excelApp     = null;
-        private const string CONFIGURATION_EXCEL_NAME = "Configuration.xlsx";
-        private const string CUSTOMERS_SHEET_NAME = "Customers";
-        private const string TANKO_DETAILS_SHEET_NAME = "TankoExcelParams";
-        private const string AGENTS_SHEE_NAME = "Agents";
-        private const string BOOKING_SHEE_NAME = "Booking";
+
+        // internal excel parameters
+        private const string CONFIGURATION_EXCEL_NAME   = "Configuration.xlsx";
+        private const string CUSTOMERS_SHEET_NAME       = "Customers";
+        private const string TANKO_DETAILS_SHEET_NAME   = "TankoExcelParams";
+        private const string BOOKING_SHEE_NAME          = "Booking";
+        private const string AGENTS_SHEE_NAME           = "Agents";
 
         // function kills all processes of excel
         private static void killExcel()
@@ -73,15 +74,14 @@ namespace emailTest
             Utils.killProcess("excel");
         }
 
-        // function extracts customer list from static DB (excel file)
-        public static void getCustomersDetails()
+        // function parses internal excel DB and extracts all needed data from all sheets
+        public static void getDetailsFromLocalDb()
         {
             string configurationExcelPath = Path.Combine(Directory.GetCurrentDirectory(), CONFIGURATION_EXCEL_NAME);
 
             try
             {
                 workBook = excelApp.Workbooks.Open(configurationExcelPath);
-                excelSheet = workBook.Sheets[CUSTOMERS_SHEET_NAME];
             }
             catch (Exception e)
             {
@@ -90,9 +90,35 @@ namespace emailTest
                 return;
             }
 
-            // go oer the whole table filling the customerLust
+            // parse excel
+            getCustomersDetails();
+            getTankoExcelParameters();
+            getShippingCompaniesDetais();
+            getAgentsDetails();
+
+            // close file instance
+            workBook.Close();
+            workBook = null;
+        }
+
+        // function extracts customer list from static DB (excel file)
+        private static void getCustomersDetails()
+        {
+            // go to specific sheet
+            try
+            {
+                excelSheet = workBook.Sheets[CUSTOMERS_SHEET_NAME];
+            }
+            catch (Exception e)
+            {
+                OrdersParser._Form.log(string.Format("Failed to open excel sheet: {0}. Error: {1}", CUSTOMERS_SHEET_NAME, e.Message), OrdersParser.LogLevel.Error);
+                dispose();
+                return;
+            }
+
+            // go over the whole table filling the customerLust
             // start from 3, since 
-            // dynamic aray starts from [1,1]
+            // dynamic array starts from [1,1]
             // row 1 is full of nulls
             // row 2 has the column names
             string val = string.Empty;
@@ -150,29 +176,27 @@ namespace emailTest
             OrdersParser._Form.log(string.Format("Found {0} customers in the private DB", Common.customerList.Count));
             OrdersParser._Form.log(string.Format("Need to send reports to {0} customers", Common.customerList.Count(x => x.bSendReport == true)));
 
-            workBook.Close();
+            excelSheet = null;
         }
 
         // function extracts agents list from static DB (excel file)
-        public static void getAgentsDetails()
+        private static void getAgentsDetails()
         {
-            string configurationExcelPath = Path.Combine(Directory.GetCurrentDirectory(), CONFIGURATION_EXCEL_NAME);
-
+            // got to specific sheet
             try
             {
-                workBook = excelApp.Workbooks.Open(configurationExcelPath);
                 excelSheet = workBook.Sheets[AGENTS_SHEE_NAME];
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
+                OrdersParser._Form.log(string.Format("Failed to open excel sheet: {0}. Error: {1}", AGENTS_SHEE_NAME, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
 
-            // go oer the whole table filling the customerLust
+            // go over the whole table filling the customerLust
             // start from 3, since 
-            // dynamic aray starts from [1,1]
+            // dynamic array starts from [1,1]
             // row 1 is full of nulls
             // row 2 has the column names
             string val = string.Empty;
@@ -225,29 +249,27 @@ namespace emailTest
             // success
             OrdersParser._Form.log(string.Format("Found {0} agents in the private DB", Common.agentList.Count));
 
-            workBook.Close();
+            excelSheet = null;
         }
 
-        // fucntion extracts shipping companies (booking) list from static DB (excel file)
-        public static void getShippingCompaniesDetais()
+        // function extracts shipping companies (booking) list from static DB (excel file)
+        private static void getShippingCompaniesDetais()
         {
-            string configurationExcelPath = Path.Combine(Directory.GetCurrentDirectory(), CONFIGURATION_EXCEL_NAME);
-
+            // go to specific sheet
             try
             {
-                workBook = excelApp.Workbooks.Open(configurationExcelPath);
                 excelSheet = workBook.Sheets[BOOKING_SHEE_NAME];
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
+                OrdersParser._Form.log(string.Format("Failed to open excel sheet: {0}. Error: {1}", BOOKING_SHEE_NAME, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
 
-            // go oer the whole table filling the customerLust
+            // go over the whole table filling the customerLust
             // start from 3, since 
-            // dynamic aray starts from [1,1]
+            // dynamic array starts from [1,1]
             // row 1 is full of nulls
             // row 2 has the column names
             string val = string.Empty;
@@ -304,29 +326,27 @@ namespace emailTest
             // success
             OrdersParser._Form.log(string.Format("Found {0} shipping companies in the private DB", Common.shippingCompanyList.Count));
 
-            workBook.Close();
+            excelSheet = null;
         }
 
         // function extracts the Tanko excel parameters such as
         // file name and sender email
-        public static void getTankoExcelParameters()
+        private static void getTankoExcelParameters()
         {
-            string configurationExcelPath = Path.Combine(Directory.GetCurrentDirectory(), CONFIGURATION_EXCEL_NAME);
-
+            // go to specific sheet
             try
             {
-                workBook = excelApp.Workbooks.Open(configurationExcelPath);
                 excelSheet = workBook.Sheets[TANKO_DETAILS_SHEET_NAME];
             }
             catch (Exception e)
             {
-                OrdersParser._Form.log(string.Format("Failed to open excel file in: {0}. Error: {1}", configurationExcelPath, e.Message), OrdersParser.LogLevel.Error);
+                OrdersParser._Form.log(string.Format("Failed to open excel sheet: {0}. Error: {1}", TANKO_DETAILS_SHEET_NAME, e.Message), OrdersParser.LogLevel.Error);
                 dispose();
                 return;
             }
 
             // 2D table with parameters and values
-            // start from 3, since dynamic aray starts from [1,1]
+            // start from 3, since dynamic array starts from [1,1]
             // row 1 is full of nulls
             // row 2 has the column names
             string val = string.Empty;
@@ -344,7 +364,7 @@ namespace emailTest
                     if (val == "emailAddress") Outlook.tancoOrdersEmail = sheet[effectiveDataOffset, col + 1];
                 }
 
-                // excel Tanki file name
+                // excel Tanko file name
                 val = sheet[effectiveDataOffset + 1, col];
                 if (string.IsNullOrEmpty(val) == false)
                 {
@@ -362,12 +382,20 @@ namespace emailTest
             OrdersParser._Form.log(string.Format("Tanko excel file name: {0}", Outlook.tancoOrdersFileName));
             OrdersParser._Form.log(string.Format("Sender email: {0}", Outlook.tancoOrdersEmail));
 
-            workBook.Close();
+            excelSheet = null;
         }
 
         // function parses order details from a given DB (excel file)
         public static void getOrderDetails()
         {
+            // sanity check that excel file was parsed successfully
+            if (File.Exists(Common.plannedImportExcel) == false)
+            {
+                // file doesn't exist
+                OrdersParser._Form.log(string.Format("Orders file is not found at: {0}", Common.plannedImportExcel), OrdersParser.LogLevel.Error);
+                return;
+            }
+
             try
             {
                 workBook = excelApp.Workbooks.Open(Common.plannedImportExcel);
@@ -387,7 +415,7 @@ namespace emailTest
             int totalNumOfRows = excelSheet.UsedRange.Rows.Count;
             dynamic sheet = excelSheet.UsedRange.Value2;
 
-            //  need to skip the first 3 rows - hardcoded (static formart)
+            //  need to skip the first 3 rows - hardcoded (static format)
             int effectiveDataStart = 4;
 
             try
@@ -431,7 +459,7 @@ namespace emailTest
                     order.sailingDate    = Utils.getDateFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('N')]);
                     order.arrivalDate    = Utils.getDateFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('Q')]);
 
-                    // order passed all critera - add to list
+                    // order passed all criteria - add to list
                     Common.orderList.Add(order);
                     order = null;
                 }
@@ -445,7 +473,10 @@ namespace emailTest
 
             OrdersParser._Form.log(string.Format("Parsed {0} records from excel", Common.orderList.Count));
 
+            // close file instance
+            excelSheet = null;
             workBook.Close();
+            workBook = null;
         }
 
         // function generates excel file with specific customer orders
