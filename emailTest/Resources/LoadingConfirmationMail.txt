@@ -1,6 +1,6 @@
 Hi {agent},
 
-Tommorow ({date}, {day}) we have loading for:
+Tomorrow ({date}, {day}) we have loading for:
 
 {table}
 

@@ -15,9 +15,9 @@ namespace Anko
         public static void init()
         {
             // this can take several seconds
-            OrdersParser._Form.log("Create excel instances - please wait");
+            //OrdersParser._Form.log("Create excel instances - please wait");
 
-            killExcel();
+            //killExcel();
 
             // open once excel instance for all the project
             try
@@ -133,20 +133,25 @@ namespace Anko
             {
                 for (int row = 0; row < totalNumOfRows; row++)
                 {
+                    
                     // name
                     val = sheet[row + effectiveDataOffset, col];
                     if (string.IsNullOrEmpty(val) == false) customer.name = val;
 
+                    // alias (if exists)
+                    val = sheet[row + effectiveDataOffset, col+ 1];
+                    if (string.IsNullOrEmpty(val) == false) customer.alias = val;
+
                     // to
-                    val = sheet[row + effectiveDataOffset, col + 1];
+                    val = sheet[row + effectiveDataOffset, col + 2];
                     if (string.IsNullOrEmpty(val) == false) customer.to.Add(val);
 
                     // cc
-                    val = sheet[row + effectiveDataOffset, col + 2];
+                    val = sheet[row + effectiveDataOffset, col + 3];
                     if (string.IsNullOrEmpty(val) == false) customer.cc.Add(val);
 
                     // report needed?
-                    val = sheet[row + effectiveDataOffset, col + 3];
+                    val = sheet[row + effectiveDataOffset, col + 4];
                     if (string.IsNullOrEmpty(val) == false)
                     {
                         if (val.Trim().ToLower().Equals("yes"))
@@ -175,6 +180,9 @@ namespace Anko
             // success
             OrdersParser._Form.log(string.Format("Found {0} customers in the private DB", Common.customerList.Count));
             OrdersParser._Form.log(string.Format("Need to send reports to {0} customers", Common.customerList.Count(x => x.bSendReport == true)));
+
+            // update global list outside of this APP domain
+            ExcelRemote.RemoteExeclController.DataUpdater.updateCustomerList(Common.customerList);
 
             excelSheet = null;
         }
@@ -249,6 +257,9 @@ namespace Anko
             // success
             OrdersParser._Form.log(string.Format("Found {0} agents in the private DB", Common.agentList.Count));
 
+            // update global list outside of this APP domain
+            ExcelRemote.RemoteExeclController.DataUpdater.updateAgentList(Common.agentList);
+
             excelSheet = null;
         }
 
@@ -289,7 +300,7 @@ namespace Anko
                     if (string.IsNullOrEmpty(val) == false) shippingCompany.shippingLine = val;
 
                     // id
-                    val = sheet[row + effectiveDataOffset, col+ 1];
+                    val = sheet[row + effectiveDataOffset, col + 1];
                     if (string.IsNullOrEmpty(val) == false) shippingCompany.id = val;
 
                     // agent name
@@ -325,6 +336,9 @@ namespace Anko
 
             // success
             OrdersParser._Form.log(string.Format("Found {0} shipping companies in the private DB", Common.shippingCompanyList.Count));
+
+            // update global list outside of this APP domain
+            ExcelRemote.RemoteExeclController.DataUpdater.updateShippingCompanyList(Common.shippingCompanyList);
 
             excelSheet = null;
         }
@@ -438,21 +452,21 @@ namespace Anko
                     }
 
                     // strings
-                    order.customer       = sheet[row, Utils.getIndexFromColumnChar('C')];
-                    order.shipper        = sheet[row, Utils.getIndexFromColumnChar('D')];
+                    order.customer       = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('C')]);
+                    order.shipper        = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('D')]);
                     order.consignee      = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('E')]);
-                    order.customerRef    = sheet[row, Utils.getIndexFromColumnChar('F')];
-                    order.tankNum        = sheet[row, Utils.getIndexFromColumnChar('H')];
-                    order.activity       = sheet[row, Utils.getIndexFromColumnChar('I')];
-                    order.fromCountry    = sheet[row, Utils.getIndexFromColumnChar('K')];
-                    order.fromPlace      = sheet[row, Utils.getIndexFromColumnChar('M')];
-                    order.toCountry      = sheet[row, Utils.getIndexFromColumnChar('O')];
-                    order.toPlace        = sheet[row, Utils.getIndexFromColumnChar('P')];
-                    order.productName    = sheet[row, Utils.getIndexFromColumnChar('R')];
-                    order.vessel         = sheet[row, Utils.getIndexFromColumnChar('S')];
-                    order.voyage         = sheet[row, Utils.getIndexFromColumnChar('T')];
-                    order.MBL            = sheet[row, Utils.getIndexFromColumnChar('U')];
-                    order.arrivalStatus  = sheet[row, Utils.getIndexFromColumnChar('V')];
+                    order.customerRef    = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('F')]);
+                    order.tankNum        = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('H')]);
+                    order.activity       = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('I')]);
+                    order.fromCountry    = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('K')]);
+                    order.fromPlace      = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('M')]);
+                    order.toCountry      = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('O')]);
+                    order.toPlace        = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('P')]);
+                    order.productName    = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('R')]);
+                    order.vessel         = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('S')]);
+                    order.voyage         = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('T')]);
+                    order.MBL            = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('U')]);
+                    order.arrivalStatus  = Utils.getStringFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('V')]);
 
                     // dates
                     order.loadingDate    = Utils.getDateFromDynamicSheet(sheet[row, Utils.getIndexFromColumnChar('J')]);
@@ -473,6 +487,9 @@ namespace Anko
 
             OrdersParser._Form.log(string.Format("Parsed {0} records from excel", Common.orderList.Count));
 
+            // update global list outside of this APP domain
+            ExcelRemote.RemoteExeclController.DataUpdater.updateOrderList(Common.orderList);
+
             // close file instance
             excelSheet = null;
             workBook.Close();
@@ -482,6 +499,12 @@ namespace Anko
         // function generates excel file with specific customer orders
         public static void generateCustomerFile(dynamic valuesArray, int rows, int cols, Common.Customer customer, string outputFileName)
         {
+            // can be null in the first load
+            if (excelApp == null)
+            {
+                init();
+            }
+
             try
             {
                 workBook = excelApp.Workbooks.Add();

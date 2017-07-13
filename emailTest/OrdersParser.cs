@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data;
+using WatchTool.Core.Services.Isolation;
+using Anko.ExcelRemote;
+using Anko.Updater;
 
 namespace Anko
 {
@@ -32,38 +35,36 @@ namespace Anko
 
             // initialization is too long
             // start in new task
-            Task.Factory.StartNew(() =>
-                                        {
-                                            // init office instances
-                                            Excel.init();
-                                            Outlook.init();
+            StartFlowInternal();
+        }
 
-                                            // create temp results folder
-                                            Utils.createResultsFolder();
+        private async void StartFlowInternal()
+        {
+            Isolator isolator = new Isolator();
 
-                                            // parse local DB
-                                            Excel.getDetailsFromLocalDb();
+            var remoteExcel = isolator.GetIsolatedInstance<IRemoteExeclController, RemoteExeclController>();
 
-                                            // fetch and save to file the most updated orders excel file
-                                            Outlook.readLastOrdersFile();
+            await Task.Run(() =>
+            {
+                var remoteActual = remoteExcel.Item2;
+                remoteActual.RunExcelInit(this, new DataUpdater());
+            });
 
-                                            // parse the orders DB
-                                            Excel.getOrderDetails();
+            isolator.UnloadIsolationContext(remoteExcel.Item1);
 
-                                            // today's arrivals
-                                            updateArrivalsGrid();
+            // today's arrivals
+            updateArrivalsGrid();
 
-                                            // yesterday's sails
-                                            updateSailsGrid();
-                                        });
+            // yesterday's sails
+            updateSailsGrid();
         }
 
         // function disposes all used classes
         private void cleanResources(bool bSuccess)
         {
             // dispose classes
-            //Excel.dispose();
-            //Outlook.dispose();
+            Excel.dispose();
+            Outlook.dispose();
 
             animateGif(false);
             buttonsSetVisible(true);
@@ -178,7 +179,7 @@ namespace Anko
             // filter only needed customer (all the customers in the list)
             foreach (Common.Customer customer in Common.customerList)
             {
-                resultList.AddRange(Outlook.filterCustomersByName(customer.name));
+                resultList.AddRange(Outlook.filterCustomersByName(customer.name, customer.alias));
             }
 
 #if OFFLINE
@@ -256,12 +257,12 @@ namespace Anko
             // filter only needed customer (all the customers in the list)
             foreach (Common.Customer customer in Common.customerList)
             {
-                resultList.AddRange(Outlook.filterCustomersByName(customer.name));
+                resultList.AddRange(Outlook.filterCustomersByName(customer.name, customer.alias));
             }
 
             // filter only yesterday's sailing dates
             // filter only loadings sent from the country of the agent
-            // order by consignee
+            // order by sailingDate
             resultList = resultList.Where(x => x.sailingDate.Date >= DateTime.Now.AddDays((-1) * (sailingDays)).Date &&
                                                x.sailingDate.Date <= DateTime.Now.AddDays(-1))
                                    .OrderByDescending(x => x.sailingDate)
@@ -430,10 +431,10 @@ namespace Anko
             // parsing is long, so in order not to block the GUI
             // start in new task
             Task.Factory.StartNew(() =>
-            {
-                // prepare mails for all customer based on DB data
-                Outlook.prepareOrderMailsToAllCustomers();
-            })
+                                        {
+                                            // prepare mails for all customer based on DB data
+                                            Outlook.prepareOrderMailsToAllCustomers();
+                                        })
                         // when done, call this CB
                         .ContinueWith(mailCompleteCB);
         }

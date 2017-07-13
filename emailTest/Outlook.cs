@@ -17,7 +17,7 @@ namespace Anko
         public static void init()
         {
             // this can take several seconds
-            OrdersParser._Form.log("Create outlook instances - please wait");
+            //OrdersParser._Form.log("Create outlook instances - please wait");
 
             // open once outlook instance for all project
             try
@@ -168,9 +168,9 @@ namespace Anko
             // filter the list for certain customer
             // filter out past arrivals
             // order by arrival date
-            List<Common.Order> resultList = filterCustomersByName(customer.name).Where(x => x.arrivalDate > now)
-                                                                                .OrderBy(x => x.arrivalDate)
-                                                                                .ToList();
+            List<Common.Order> resultList = filterCustomersByName(customer.name, customer.alias).Where(x => x.arrivalDate > now)
+                                                                                                .OrderBy(x => x.arrivalDate)
+                                                                                                .ToList();
 
             // check if customer has orders
             if (resultList.Count == 0)
@@ -246,7 +246,7 @@ namespace Anko
             // filter only needed customer (all the customers in the list)
             foreach (Common.Customer customer in Common.customerList)
             {
-                resultList.AddRange(filterCustomersByName(customer.name));
+                resultList.AddRange(filterCustomersByName(customer.name, customer.alias));
             }
 
             // filter only tomorrow's loading dates
@@ -373,7 +373,7 @@ namespace Anko
             // filter only needed customer (all the customers in the list)
             foreach (Common.Customer customer in Common.customerList)
             {
-                resultList.AddRange(filterCustomersByName(customer.name));
+                resultList.AddRange(filterCustomersByName(customer.name, customer.alias));
             }
 
             // filter only tomorrow's loading dates
@@ -428,9 +428,10 @@ namespace Anko
         // function filters full order list by customer name
         // and returns only the relevant customers matching the name
         // TODO: move to utils class
-        public static List<Common.Order> filterCustomersByName(string customerName)
+        public static List<Common.Order> filterCustomersByName(string customerName, string customerAlias)
         {
             string name = customerName.ToLower();
+            string alias;
             List<Common.Order> res = new List<Common.Order>();
 
             // order list can be null if no Tanko excel was supplied, or there was a parsing error
@@ -440,12 +441,27 @@ namespace Anko
                 return res;
             }
 
+            // customerAlias is optional, and in case it doesn't exist, need to make sure that LINQ query will avoid it
+            // to spare IF and complicate the code, since using 'contains' add into alias something invalid in case it is empty
+            if (string.IsNullOrEmpty(customerAlias))
+            {
+                // add longs string which cannot exist in the excel file
+                // so 'contains' condition will not reveal any result for this alias
+                alias = "not available";
+            }
+            else
+            {
+                alias = customerAlias.ToLower();
+            }
+
             // most of the customers having long names, therefore, 'contains' is enough
             // while, some customers having short name (e.g. bg), and 'contains' is useless
             // for customers with name of 2 chars, try 'starts with' or starts with dots e.g. b.g.
             if (customerName.Length > 2)
             {
-                res = Common.orderList.Where(x => x.consignee.ToLower().Contains(name)).ToList();
+                res = Common.orderList.Where(x => x.consignee.ToLower().Contains(name)      ||
+                                                  x.shipper.ToLower().Contains(alias))
+                                      .ToList();
             }
             else
             {
@@ -453,12 +469,14 @@ namespace Anko
                 string nameWithDots = string.Join(".", name.ToCharArray()) + ".";
 
                 // try 'starts with'
-                res = Common.orderList.Where(x => x.consignee.ToLower().StartsWith(name) ||
-                                                  x.consignee.ToLower().StartsWith(nameWithDots)).ToList();
+                res = Common.orderList.Where(x => x.consignee.ToLower().StartsWith(name)            ||
+                                                  x.consignee.ToLower().StartsWith(nameWithDots)    ||
+                                                  x.shipper.ToLower().Contains(alias))
+                                      .ToList();
             }
 
             // change customer name (formatting)
-            res.ForEach(x => x.consignee = name.ToUpper());
+            res.ForEach(x => x.consignee = x.consignee.ToUpper());
 
             return res;
         }
@@ -467,11 +485,15 @@ namespace Anko
         // this file is sent on a daily basis, so need to load the latest one
         public static void readLastOrdersFile()
         {
-            OutlookInterop.MAPIFolder SentMail = null;
+#if OFFLINE
+            // do not try to fetch file from outlook - use hardcoded path
+            Common.plannedImportExcel = @"C:\Users\rfridbur\Downloads\Tanco_Planned_Import_to_IL.xls";
+#else
+            OutlookInterop.MAPIFolder receivedMail = null;
 
             try
             {
-                SentMail = outlookApp.ActiveExplorer().Session.GetDefaultFolder(OutlookInterop.OlDefaultFolders.olFolderInbox);
+                receivedMail = outlookApp.ActiveExplorer().Session.GetDefaultFolder(OutlookInterop.OlDefaultFolders.olFolderInbox);
             }
             catch (Exception e)
             {
@@ -480,7 +502,7 @@ namespace Anko
             }
 
             // get all the items in inbox and sort by received date in descending form
-            OutlookInterop.Items inboxItems = SentMail.Items;
+            OutlookInterop.Items inboxItems = receivedMail.Items;
             inboxItems.Sort("[ReceivedTime]", true);
 
             // loop over each mail having attachments and look for Tanco_Planned_Import_to_IL file
@@ -489,17 +511,19 @@ namespace Anko
                 if (newEmail != null)
                 {
                     // filter out all senders except the one I'm looking for
-                    if (newEmail.Sender.Address != tancoOrdersEmail) continue;
+                    if (newEmail.Sender.Address.Trim().ToLower() != tancoOrdersEmail.Trim().ToLower()) continue;
 
                     // loop over all the attachments
                     foreach (OutlookInterop.Attachment item in newEmail.Attachments)
                     {
                         var test = item.PropertyAccessor.GetProperty("http://schemas.microsoft.com/mapi/proptag/0x3712001E");
-                        if (string.IsNullOrEmpty((string)test))
+
+                        if (string.IsNullOrEmpty((string)test) == false)
                         {
+
                             // real attachment (not embedded pic/logo)
                             // check if attachment matches, since sender might send other mails as well
-                            if (item.DisplayName.ToLower().Contains(tancoOrdersFileName.ToLower()))
+                            if (item.DisplayName.Trim().ToLower().Contains(tancoOrdersFileName.Trim().ToLower()))
                             {
                                 // match - save this attachment into file and bail out
                                 OrdersParser._Form.log("Found Tanko shipping to IL file");
@@ -526,13 +550,10 @@ namespace Anko
 
             // plannedImportExcel should be automatically extracted from outlook
             // if file is empty, it means that extraction failed therefore,
-            // user is alsked to provide a file 
+            // user is asked to provide a file 
             if (string.IsNullOrEmpty(Common.plannedImportExcel) == true)
             {
                 OrdersParser._Form.log("Choose Tanko orders excel file");
-#if OFFLINE
-                Common.plannedImportExcel = @"C:\Users\rfridbur\Downloads\Tanco_Planned_Import_to_IL.xls";
-#else
                 // displays an OpenFileDialog so the user can select excel file
                 Thread t = new Thread((ThreadStart)(() => 
                 {
@@ -550,8 +571,8 @@ namespace Anko
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
                 t.Join();
-#endif
             }
+#endif
         }
 
         // basic template function to send mail to specific customer
@@ -570,6 +591,12 @@ namespace Anko
                 ImageConverter converter = new ImageConverter();
                 byte[] tempByteArr = (byte[])converter.ConvertTo(Anko.Properties.Resources.logo, typeof(byte[]));
                 File.WriteAllBytes(signatureFilePath, tempByteArr);
+            }
+
+            // outlook can be null in the first time
+            if (outlookApp == null)
+            {
+                init();
             }
 
             try

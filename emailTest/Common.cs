@@ -10,13 +10,19 @@ namespace Anko
 
         // customer class holds all customer details
         // customers purchase products from the company
+        [Serializable]
         public class Customer : MailingRecepient
         {
             public bool bSendReport;
+
+            // some customers can have alias which is written in 'shipper' column
+            // when searching, need to look for all possible alias names as well
+            public string alias;
         }
 
         // agent class holds all agent details
         // agents are internal works
+        [Serializable]
         public class Agent : MailingRecepient
         {
             // constructor
@@ -32,6 +38,7 @@ namespace Anko
 
         // shippingCompany class holds all shipping companies and agents
         // e.g. ZIM, MSC
+        [Serializable]
         public class ShippingCompany : MailingRecepient
         {
             public string shippingLine;
@@ -39,6 +46,7 @@ namespace Anko
         }
 
         // mail recipient holds all mailing details
+        [Serializable]
         public class MailingRecepient
         {
             // constructor
@@ -62,6 +70,7 @@ namespace Anko
 
         // order class according to Tanko import excel
         // columns are hardcoded and static
+        [Serializable]
         public class Order
         {
             public int      jobNo;          // A

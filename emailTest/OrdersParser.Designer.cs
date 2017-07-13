@@ -36,14 +36,14 @@
             this.bookConfirm_btn = new System.Windows.Forms.Button();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.arrivalsTab = new System.Windows.Forms.TabPage();
+            this.haifaLinkLbl = new System.Windows.Forms.LinkLabel();
+            this.ashdodLinkLbl = new System.Windows.Forms.LinkLabel();
             this.arrivals_lbl = new System.Windows.Forms.Label();
             this.arrivalsDataGrid = new System.Windows.Forms.DataGridView();
             this.sailsTab = new System.Windows.Forms.TabPage();
             this.sails_lbl = new System.Windows.Forms.Label();
             this.docReceipts_btn = new System.Windows.Forms.Button();
             this.sailsDataGrid = new System.Windows.Forms.DataGridView();
-            this.ashdodLinkLbl = new System.Windows.Forms.LinkLabel();
-            this.haifaLinkLbl = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.picbox)).BeginInit();
             this.tabControl.SuspendLayout();
             this.arrivalsTab.SuspendLayout();
@@ -55,12 +55,12 @@
             // reports_btn
             // 
             this.reports_btn.BackColor = System.Drawing.SystemColors.Window;
-            this.reports_btn.Font = new System.Drawing.Font("Kristen ITC", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.reports_btn.Font = new System.Drawing.Font("Kristen ITC", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.reports_btn.ForeColor = System.Drawing.Color.Magenta;
             this.reports_btn.Location = new System.Drawing.Point(16, 15);
             this.reports_btn.Margin = new System.Windows.Forms.Padding(4);
             this.reports_btn.Name = "reports_btn";
-            this.reports_btn.Size = new System.Drawing.Size(249, 52);
+            this.reports_btn.Size = new System.Drawing.Size(272, 52);
             this.reports_btn.TabIndex = 1;
             this.reports_btn.Text = "Reports";
             this.reports_btn.UseVisualStyleBackColor = false;
@@ -69,20 +69,20 @@
             // logTextBox
             // 
             this.logTextBox.Font = new System.Drawing.Font("Calibri", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.logTextBox.Location = new System.Drawing.Point(273, 286);
+            this.logTextBox.Location = new System.Drawing.Point(308, 333);
             this.logTextBox.Margin = new System.Windows.Forms.Padding(4);
             this.logTextBox.Name = "logTextBox";
-            this.logTextBox.Size = new System.Drawing.Size(1029, 211);
+            this.logTextBox.Size = new System.Drawing.Size(1245, 164);
             this.logTextBox.TabIndex = 3;
             this.logTextBox.Text = "";
             // 
             // picbox
             // 
             this.picbox.Image = ((System.Drawing.Image)(resources.GetObject("picbox.Image")));
-            this.picbox.Location = new System.Drawing.Point(-6, 186);
+            this.picbox.Location = new System.Drawing.Point(-8, 175);
             this.picbox.Margin = new System.Windows.Forms.Padding(4);
             this.picbox.Name = "picbox";
-            this.picbox.Size = new System.Drawing.Size(289, 342);
+            this.picbox.Size = new System.Drawing.Size(328, 373);
             this.picbox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.picbox.TabIndex = 4;
             this.picbox.TabStop = false;
@@ -90,12 +90,12 @@
             // loadConfirm_btn
             // 
             this.loadConfirm_btn.BackColor = System.Drawing.SystemColors.Window;
-            this.loadConfirm_btn.Font = new System.Drawing.Font("Kristen ITC", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.loadConfirm_btn.Font = new System.Drawing.Font("Kristen ITC", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.loadConfirm_btn.ForeColor = System.Drawing.Color.Magenta;
             this.loadConfirm_btn.Location = new System.Drawing.Point(16, 75);
             this.loadConfirm_btn.Margin = new System.Windows.Forms.Padding(4);
             this.loadConfirm_btn.Name = "loadConfirm_btn";
-            this.loadConfirm_btn.Size = new System.Drawing.Size(249, 52);
+            this.loadConfirm_btn.Size = new System.Drawing.Size(272, 52);
             this.loadConfirm_btn.TabIndex = 5;
             this.loadConfirm_btn.Text = "Loading Confirmation";
             this.loadConfirm_btn.UseVisualStyleBackColor = false;
@@ -104,12 +104,12 @@
             // bookConfirm_btn
             // 
             this.bookConfirm_btn.BackColor = System.Drawing.SystemColors.Window;
-            this.bookConfirm_btn.Font = new System.Drawing.Font("Kristen ITC", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bookConfirm_btn.Font = new System.Drawing.Font("Kristen ITC", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.bookConfirm_btn.ForeColor = System.Drawing.Color.Magenta;
             this.bookConfirm_btn.Location = new System.Drawing.Point(16, 135);
             this.bookConfirm_btn.Margin = new System.Windows.Forms.Padding(4);
             this.bookConfirm_btn.Name = "bookConfirm_btn";
-            this.bookConfirm_btn.Size = new System.Drawing.Size(249, 52);
+            this.bookConfirm_btn.Size = new System.Drawing.Size(272, 52);
             this.bookConfirm_btn.TabIndex = 6;
             this.bookConfirm_btn.Text = "Booking Confirmation";
             this.bookConfirm_btn.UseVisualStyleBackColor = false;
@@ -120,10 +120,10 @@
             this.tabControl.Controls.Add(this.arrivalsTab);
             this.tabControl.Controls.Add(this.sailsTab);
             this.tabControl.Font = new System.Drawing.Font("Calibri", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabControl.Location = new System.Drawing.Point(273, 15);
+            this.tabControl.Location = new System.Drawing.Point(308, 15);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(1029, 264);
+            this.tabControl.Size = new System.Drawing.Size(1245, 311);
             this.tabControl.TabIndex = 7;
             // 
             // arrivalsTab
@@ -135,10 +135,30 @@
             this.arrivalsTab.Location = new System.Drawing.Point(4, 30);
             this.arrivalsTab.Name = "arrivalsTab";
             this.arrivalsTab.Padding = new System.Windows.Forms.Padding(3);
-            this.arrivalsTab.Size = new System.Drawing.Size(1021, 230);
+            this.arrivalsTab.Size = new System.Drawing.Size(1237, 277);
             this.arrivalsTab.TabIndex = 0;
             this.arrivalsTab.Text = "Today\'s arrivals";
             this.arrivalsTab.UseVisualStyleBackColor = true;
+            // 
+            // haifaLinkLbl
+            // 
+            this.haifaLinkLbl.AutoSize = true;
+            this.haifaLinkLbl.Location = new System.Drawing.Point(1132, 51);
+            this.haifaLinkLbl.Name = "haifaLinkLbl";
+            this.haifaLinkLbl.Size = new System.Drawing.Size(80, 21);
+            this.haifaLinkLbl.TabIndex = 3;
+            this.haifaLinkLbl.TabStop = true;
+            this.haifaLinkLbl.Text = "Haifa Port";
+            // 
+            // ashdodLinkLbl
+            // 
+            this.ashdodLinkLbl.AutoSize = true;
+            this.ashdodLinkLbl.Location = new System.Drawing.Point(1132, 30);
+            this.ashdodLinkLbl.Name = "ashdodLinkLbl";
+            this.ashdodLinkLbl.Size = new System.Drawing.Size(97, 21);
+            this.ashdodLinkLbl.TabIndex = 2;
+            this.ashdodLinkLbl.TabStop = true;
+            this.ashdodLinkLbl.Text = "Ashdod Port";
             // 
             // arrivals_lbl
             // 
@@ -161,7 +181,7 @@
             this.arrivalsDataGrid.Name = "arrivalsDataGrid";
             this.arrivalsDataGrid.ReadOnly = true;
             this.arrivalsDataGrid.RowTemplate.Height = 24;
-            this.arrivalsDataGrid.Size = new System.Drawing.Size(874, 202);
+            this.arrivalsDataGrid.Size = new System.Drawing.Size(1067, 241);
             this.arrivalsDataGrid.TabIndex = 0;
             // 
             // sailsTab
@@ -172,7 +192,7 @@
             this.sailsTab.Location = new System.Drawing.Point(4, 30);
             this.sailsTab.Name = "sailsTab";
             this.sailsTab.Padding = new System.Windows.Forms.Padding(3);
-            this.sailsTab.Size = new System.Drawing.Size(1021, 230);
+            this.sailsTab.Size = new System.Drawing.Size(1237, 277);
             this.sailsTab.TabIndex = 1;
             this.sailsTab.Text = "Sails";
             this.sailsTab.UseVisualStyleBackColor = true;
@@ -190,12 +210,12 @@
             // docReceipts_btn
             // 
             this.docReceipts_btn.BackColor = System.Drawing.SystemColors.Window;
-            this.docReceipts_btn.Font = new System.Drawing.Font("Kristen ITC", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.docReceipts_btn.Font = new System.Drawing.Font("Kristen ITC", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.docReceipts_btn.ForeColor = System.Drawing.Color.Magenta;
-            this.docReceipts_btn.Location = new System.Drawing.Point(884, 30);
+            this.docReceipts_btn.Location = new System.Drawing.Point(1077, 30);
             this.docReceipts_btn.Margin = new System.Windows.Forms.Padding(4);
             this.docReceipts_btn.Name = "docReceipts_btn";
-            this.docReceipts_btn.Size = new System.Drawing.Size(133, 83);
+            this.docReceipts_btn.Size = new System.Drawing.Size(153, 83);
             this.docReceipts_btn.TabIndex = 9;
             this.docReceipts_btn.Text = "Documents Receipts";
             this.docReceipts_btn.UseVisualStyleBackColor = false;
@@ -212,35 +232,15 @@
             this.sailsDataGrid.Name = "sailsDataGrid";
             this.sailsDataGrid.ReadOnly = true;
             this.sailsDataGrid.RowTemplate.Height = 24;
-            this.sailsDataGrid.Size = new System.Drawing.Size(874, 202);
+            this.sailsDataGrid.Size = new System.Drawing.Size(1067, 241);
             this.sailsDataGrid.TabIndex = 0;
-            // 
-            // ashdodLinkLbl
-            // 
-            this.ashdodLinkLbl.AutoSize = true;
-            this.ashdodLinkLbl.Location = new System.Drawing.Point(905, 30);
-            this.ashdodLinkLbl.Name = "ashdodLinkLbl";
-            this.ashdodLinkLbl.Size = new System.Drawing.Size(97, 21);
-            this.ashdodLinkLbl.TabIndex = 2;
-            this.ashdodLinkLbl.TabStop = true;
-            this.ashdodLinkLbl.Text = "Ashdod Port";
-            // 
-            // HaifaLinkLbl
-            // 
-            this.haifaLinkLbl.AutoSize = true;
-            this.haifaLinkLbl.Location = new System.Drawing.Point(905, 51);
-            this.haifaLinkLbl.Name = "HaifaLinkLbl";
-            this.haifaLinkLbl.Size = new System.Drawing.Size(80, 21);
-            this.haifaLinkLbl.TabIndex = 3;
-            this.haifaLinkLbl.TabStop = true;
-            this.haifaLinkLbl.Text = "Haifa Port";
             // 
             // OrdersParser
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.ClientSize = new System.Drawing.Size(1320, 511);
+            this.ClientSize = new System.Drawing.Size(1571, 515);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.bookConfirm_btn);
             this.Controls.Add(this.loadConfirm_btn);

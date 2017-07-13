@@ -71,8 +71,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppdomainController\IIsolator.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Excel.cs" />
+    <Compile Include="ExcelRemote\IRemoteExeclController.cs" />
+    <Compile Include="ExcelRemote\RemoteExeclController.cs" />
     <Compile Include="OrdersParser.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,9 +91,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Updater\DataUpdater.cs" />
+    <Compile Include="Updater\IDataUpdater.cs" />
     <Compile Include="Utils.cs" />
     <EmbeddedResource Include="OrdersParser.resx">
       <DependentUpon>OrdersParser.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -170,13 +176,14 @@
   <ItemGroup>
     <Content Include="Arrioch-Birdies-Pidgin.ico" />
     <EmbeddedResource Include="Resources\DocumentsReceipts.txt" />
-    <None Include="bin\Debug\sig.jpg" />
     <EmbeddedResource Include="Resources\BookingConfirmationMail.txt" />
     <EmbeddedResource Include="Resources\LoadingConfirmationMail.txt" />
     <EmbeddedResource Include="Resources\SignatureText.txt" />
     <EmbeddedResource Include="Resources\OrdersMail.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="bin\Debug\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
