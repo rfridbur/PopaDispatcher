@@ -187,6 +187,7 @@ namespace Anko
             resultList = resultList.Where(x => x.arrivalDate.Date >= DateTime.Now.Date)
                                    .Take(6)
                                    .OrderBy(x => x.consignee)
+                                   .Distinct()
                                    .ToList();
 #else
             // filter only today's arrival dates
@@ -194,6 +195,7 @@ namespace Anko
             // order by consignee
             resultList = resultList.Where(x => x.arrivalDate.Date == DateTime.Now.Date)
                                    .OrderBy(x => x.consignee)
+                                   .Distinct()
                                    .ToList();
 #endif
 
@@ -266,6 +268,7 @@ namespace Anko
             resultList = resultList.Where(x => x.sailingDate.Date >= DateTime.Now.AddDays((-1) * (sailingDays)).Date &&
                                                x.sailingDate.Date <= DateTime.Now.AddDays(-1))
                                    .OrderByDescending(x => x.sailingDate)
+                                   .Distinct()
                                    .ToList();
 
             // check if customer has orders

@@ -170,6 +170,7 @@ namespace Anko
             // order by arrival date
             List<Common.Order> resultList = filterCustomersByName(customer.name, customer.alias).Where(x => x.arrivalDate > now)
                                                                                                 .OrderBy(x => x.arrivalDate)
+                                                                                                .Distinct()
                                                                                                 .ToList();
 
             // check if customer has orders
@@ -254,6 +255,7 @@ namespace Anko
             // order by consignee
             resultList = resultList.Where(x => agent.countries.Contains(x.fromCountry) && x.loadingDate.Date == DateTime.Now.AddDays(1).Date)
                                    .OrderBy(x => x.consignee)
+                                   .Distinct()
                                    .ToList();
 
             // check if customer has orders
@@ -382,6 +384,7 @@ namespace Anko
             resultList = resultList.Where(x => x.sailingDate.Date == DateTime.Now.AddDays(bookingDays).Date && 
                                                x.MBL.ToLower().StartsWith(shippingCompany.id.ToLower()))
                                    .OrderBy(x => x.sailingDate)
+                                   .Distinct()
                                    .ToList();
 
             // check if customer has orders
@@ -469,8 +472,8 @@ namespace Anko
                 string nameWithDots = string.Join(".", name.ToCharArray()) + ".";
 
                 // try 'starts with'
-                res = Common.orderList.Where(x => x.consignee.ToLower().StartsWith(name)            ||
-                                                  x.consignee.ToLower().StartsWith(nameWithDots)    ||
+                res = Common.orderList.Where(x => x.consignee.ToLower().StartsWith(name) ||
+                                                  x.consignee.ToLower().StartsWith(nameWithDots) ||
                                                   x.shipper.ToLower().Contains(alias))
                                       .ToList();
             }
