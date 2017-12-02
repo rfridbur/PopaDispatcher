@@ -25,6 +25,7 @@ namespace Anko
             animateGif(true);
             arrivals_lbl.Text = string.Empty;
             sails_lbl.Text = string.Empty;
+            destination_lbl.Text = string.Empty;
             ashdodLinkLbl.LinkClicked += AshdodLinkLbl_LinkClicked;
             haifaLinkLbl.LinkClicked += HaifaLinkLbl_LinkClicked;
 
@@ -57,6 +58,9 @@ namespace Anko
 
             // yesterday's sails
             updateSailsGrid();
+
+            // destination port
+            updateDestinationGrid();
         }
 
         // function disposes all used classes
@@ -281,6 +285,7 @@ namespace Anko
                 return;
             }
 
+            // test
             str = string.Format("{0} new sailings in the last {1} days", resultList.Count, sailingDays);
             log(str);
             updateLabel(sails_lbl, str);
@@ -306,7 +311,88 @@ namespace Anko
                                                             }));
         }
 
-        // handler for data load complete - colorize table
+        // function verifies that shipping destination port is correct
+        // for this, it compares customer's destination port to the one mentined in the orders excel
+        // in case of no match - it alerts
+        private void updateDestinationGrid()
+        {
+            List<Common.Order> resultList = new List<Common.Order>();
+            string             str        = string.Empty;
+
+            // filter only needed customer (all the customers in the list)
+            foreach (Common.Customer customer in Common.customerList)
+            {
+                resultList.AddRange(Outlook.filterCustomersByName(customer.name, customer.alias));
+            }
+
+            // filter only loading which haven't sailed yet (sailing date > today)
+            // order by sailingDate
+            resultList = resultList.Where(x => x.sailingDate.Date > DateTime.Now.Date)
+                                   .OrderBy(x => x.sailingDate)
+                                   .Distinct()
+                                   .ToList();
+
+            // now we are left with customers who ship only to Ashdod or Haifa port
+            // generate new list containing only partial details for the report
+            List<Common.DestinationReport> targetResList = resultList.ConvertAll(x => new Common.DestinationReport
+            {
+                jobNo                   = x.jobNo,
+                shipper                 = x.shipper,
+                consignee               = x.consignee,
+                fromCountry             = x.fromCountry,
+                sailingDate             = x.sailingDate,
+                toCountry               = x.toCountry,
+                toPlace                 = x.toPlace,
+                arrivalDate             = x.arrivalDate
+            });
+
+            // update the bDestinationPortCorrect in the resultList
+            // caution: you cannot remove items in foreach, therefore make a copy (ToList)
+            foreach (Common.DestinationReport item in targetResList.ToList())
+            {
+                // get the destination port of this specific customer from local DB
+                PortService.PortName port = Utils.getDestinationPortByConsignee(item.consignee);
+
+                // make sure that port is as expcted, and if not, update bDestinationPortCorrect
+                if ((port == PortService.PortName.Unknown) || (Utils.strCmp(item.toPlace, port.ToString()) == true))
+                {
+                    // remove all 'correct' items, meaning that port is unknown or
+                    // actual destination port corresponds with desired one
+                    targetResList.Remove(item);
+                }
+            }
+
+            // check if customer has orders
+            if (targetResList.Count() == 0)
+            {
+                str = "Destination port is correct for all orders";
+                log(str);
+                updateLabel(destination_lbl, str);
+
+                return;
+            }
+
+            // inconsistency in destination port was detected
+            str = "Destination port inconsistency occurred";
+            log(str, LogLevel.Error);
+            updateLabel(destination_lbl, str);
+
+            // prepare DataTable to fill the grid
+            DataTable table = Utils.generateDataTableFromList<Common.DestinationReport>(targetResList);
+
+            sailsDataGrid.Invoke(new MethodInvoker(delegate
+            {
+                destinationDataGrid.DataSource = table;
+                destinationDataGrid.DataBindingComplete += destinationDataGrid_DataBindingComplete;
+            }));
+
+            tabControl.SelectedIndex = 2;
+
+            // popup message box to draw attention
+            MessageBox.Show(str, "Attention!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        // handler for sails grid data load complete - colorize table
         private void sailsDataGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             int lastColIndex = sailsDataGrid.Columns.Count - 1;
@@ -332,6 +418,34 @@ namespace Anko
             sailsDataGrid.AutoResizeColumns();
             sailsDataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             sailsDataGrid.Refresh();
+        }
+
+        // handler for destination grid data load - colorize table
+        private void destinationDataGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            int lastColIndex = destinationDataGrid.Columns.Count - 1;
+
+            foreach (DataGridViewRow row in destinationDataGrid.Rows)
+            {
+                // parse destination port from "toPlace" param which is one before last
+                string toPlace = row.Cells[lastColIndex - 1].Value.ToString().Trim().ToLower();
+
+                // colorize according to sailing data
+                if (toPlace == "ashdod")
+                {
+                    row.DefaultCellStyle.BackColor = Color.LightSalmon;
+                }
+
+                if (toPlace == "haifa")
+                {
+                    row.DefaultCellStyle.BackColor = Color.LightBlue;
+                }
+            }
+
+            destinationDataGrid.AutoGenerateColumns = true;
+            destinationDataGrid.AutoResizeColumns();
+            destinationDataGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            destinationDataGrid.Refresh();
         }
 
         // function updates arrivals data grid with data taken from port websites

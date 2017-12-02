@@ -377,5 +377,45 @@ namespace Anko
         {
             return ((Common.orderList != null) && (Common.orderList.Count() > 0));
         }
+
+        // function gets the desired destination port for a specific consignee
+        // this is done by finding the consingee name in the customers internal DB
+        // and fetching from there the required destination port
+        public static PortService.PortName getDestinationPortByConsignee(string consignee)
+        {
+            // most of the customers having long names, therefore, 'contains' is enough
+            // while, some customers having short name (e.g. bg), and 'contains' is useless
+            // for customers with name of 2 chars, try 'starts with' or starts with dots e.g. b.g.
+            foreach (Common.Customer customer in Common.customerList)
+            {
+                if (customer.name.Length > 2)
+                {
+                    if (consignee.ToLower().Contains(customer.name))
+                    {
+                        return customer.destinationPort;
+                    }
+                }
+                else
+                {
+                    // generate the name with dots between the chars
+                    string nameWithDots = string.Join(".", customer.name.ToCharArray()) + ".";
+
+                    // try 'starts with'
+                    if (consignee.ToLower().StartsWith(customer.name) || 
+                        consignee.ToLower().StartsWith(nameWithDots))
+                    {
+                        return customer.destinationPort;
+                    }
+                }
+            }
+
+            return PortService.PortName.Unknown;
+        }
+
+        // function retuns true if strings equal (neglecting case sensitive and spaces)
+        public static bool strCmp(string str1, string str2)
+        {
+            return (str1.Trim().Equals(str2.Trim(), StringComparison.InvariantCultureIgnoreCase));
+        }
     }
 }

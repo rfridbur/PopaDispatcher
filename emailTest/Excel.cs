@@ -129,11 +129,11 @@ namespace Anko
             int totalNumOfRows = excelSheet.UsedRange.Rows.Count - 2;
             dynamic sheet = excelSheet.UsedRange.Value2;
 
+
             try
             {
                 for (int row = 0; row < totalNumOfRows; row++)
                 {
-                    
                     // name
                     val = sheet[row + effectiveDataOffset, col];
                     if (string.IsNullOrEmpty(val) == false) customer.name = val;
@@ -156,6 +156,22 @@ namespace Anko
                     {
                         if (val.Trim().ToLower().Equals("yes"))
                         customer.bSendReport = true;
+                    }
+
+                    // destination port
+                    val = sheet[row + effectiveDataOffset, col + 5];
+                    if (string.IsNullOrEmpty(val) == false)
+                    {
+                        // destination port found
+                        if (val.Trim().ToLower().Equals("ashdod"))
+                        {
+                            customer.destinationPort = PortService.PortName.Ashdod;
+                        }
+
+                        if (val.Trim().ToLower().Equals("haifa"))
+                        {
+                            customer.destinationPort = PortService.PortName.Haifa;
+                        }
                     }
 
                     // check that last entry for this customer (next should be not empty or out of bounds)

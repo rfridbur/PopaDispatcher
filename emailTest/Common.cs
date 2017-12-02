@@ -13,11 +13,22 @@ namespace Anko
         [Serializable]
         public class Customer : MailingRecepient
         {
+            // constructor
+            // * set default destination port as 'unknown'
+            public Customer()
+            {
+                destinationPort = PortService.PortName.Unknown;
+            }
+
             public bool bSendReport;
 
             // some customers can have alias which is written in 'shipper' column
             // when searching, need to look for all possible alias names as well
             public string alias;
+
+            // some customers always ship to certain destination ports
+            // in case customer ships to all ports, this value will be 'unknown'
+            public PortService.PortName destinationPort;
         }
 
         // agent class holds all agent details
@@ -157,6 +168,19 @@ namespace Anko
             public string   tankNum;        // H
             public string   fromCountry;    // K
             public DateTime sailingDate;    // N
+        }
+
+        // subclass of Order
+        public class DestinationReport
+        {
+            public int      jobNo;          // A
+            public string   shipper;        // D
+            public string   consignee;      // E
+            public string   fromCountry;    // K
+            public DateTime sailingDate;    // N
+            public string   toCountry;      // O
+            public string   toPlace;        // P
+            public DateTime arrivalDate;    // Q
         }
 
         // subclass of Order
