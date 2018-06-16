@@ -138,7 +138,7 @@ namespace Anko
                     val = sheet[row + effectiveDataOffset, col];
                     if (string.IsNullOrEmpty(val) == false) customer.name = val;
 
-                    // alias (if exists)
+                    // shipper/alias (if exists)
                     val = sheet[row + effectiveDataOffset, col+ 1];
                     if (string.IsNullOrEmpty(val) == false) customer.alias = val;
 

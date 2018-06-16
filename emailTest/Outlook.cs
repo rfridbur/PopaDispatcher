@@ -460,10 +460,13 @@ namespace Anko
             // most of the customers having long names, therefore, 'contains' is enough
             // while, some customers having short name (e.g. bg), and 'contains' is useless
             // for customers with name of 2 chars, try 'starts with' or starts with dots e.g. b.g.
+            // shipper/alies specific case: it is possible that orderList will have shippers with special chars
+            // so far, only 'dots' were seen, therefore, the code below removes the 'dots' in the comparison
+            // if other special chars occur in future, suggest to have UTIL func for better comparison
             if (customerName.Length > 2)
             {
-                res = Common.orderList.Where(x => x.consignee.ToLower().Contains(name)      ||
-                                                  x.shipper.ToLower().Contains(alias))
+                res = Common.orderList.Where(x => x.consignee.ToLower().Contains(name)                          ||
+                                                  x.shipper.ToLower().Replace(".",string.Empty).Contains(alias))
                                       .ToList();
             }
             else
@@ -472,9 +475,9 @@ namespace Anko
                 string nameWithDots = string.Join(".", name.ToCharArray()) + ".";
 
                 // try 'starts with'
-                res = Common.orderList.Where(x => x.consignee.ToLower().StartsWith(name) ||
-                                                  x.consignee.ToLower().StartsWith(nameWithDots) ||
-                                                  x.shipper.ToLower().Contains(alias))
+                res = Common.orderList.Where(x => x.consignee.ToLower().StartsWith(name)                        ||
+                                                  x.consignee.ToLower().StartsWith(nameWithDots)                ||
+                                                  x.shipper.ToLower().Replace(".", string.Empty).Contains(alias))
                                       .ToList();
             }
 
